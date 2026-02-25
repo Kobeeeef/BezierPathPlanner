@@ -672,12 +672,24 @@ class InteractivePlannerVisualizer:
         warns: list[str] = []
         if bool(smoothing_diag.get("refitTriggered", False)):
             warns.append("smoothing refit/selection triggered")
+        if bool(smoothing_diag.get("terminalSafeRawFallbackUsed", False)):
+            warns.append("terminal-safe raw fallback used")
+        if bool(smoothing_diag.get("terminalDegradationRefitTriggered", False)):
+            warns.append("terminal degradation guard triggered refit")
         if float(smoothed.get("terminalOvershootCount", 0.0)) > 0.0:
             warns.append("endpoint overshoot detected")
         if float(smoothed.get("terminalGoalProjectionMonotonicViolations", 0.0)) > 0.0:
             warns.append("terminal hook projection violation")
         if float(smoothed.get("terminalGoalDistanceMonotonicViolations", 0.0)) > 0.0:
             warns.append("terminal hook distance violation")
+        if float(smoothed.get("startTerminalProjectionMonotonicViolations", 0.0)) > 0.0:
+            warns.append("start hook projection violation")
+        if float(smoothed.get("startTerminalDistanceMonotonicViolations", 0.0)) > 0.0:
+            warns.append("start hook distance violation")
+        if float(smoothed.get("startTerminalHookOrOvershootFlag", 0.0)) > 0.0:
+            warns.append("start terminal hook/overshoot")
+        if float(smoothed.get("goalTerminalHookOrOvershootFlag", 0.0)) > 0.0:
+            warns.append("goal terminal hook/overshoot")
         if float(smoothed.get("endpointSelfIntersectionCount", 0.0)) > 0.0:
             warns.append("endpoint self-intersection detected")
         if warns:
@@ -909,12 +921,27 @@ class InteractivePlannerVisualizer:
         a = self._artifacts
         s = a.summary
         timing = a.stage_timings_ms
+        raw = a.smoothing_diagnostics.get("rawPathDiagnostics", {})
         smoothed = a.smoothing_diagnostics.get("smoothedPathDiagnostics", {})
         heat_min = s.get("minHeatRegionClearanceM", -1.0)
         if heat_min is None or float(heat_min) < 0.0:
             heat_text = "n/a"
         else:
             heat_text = f"{float(heat_min):.3f} m"
+
+        def _fmt_heat_clear(value: Any) -> str:
+            try:
+                v = float(value)
+            except Exception:
+                return "n/a"
+            return "n/a" if v < 0.0 else f"{v:.3f}"
+
+        term_refit = bool(a.smoothing_diagnostics.get("terminalDegradationRefitTriggered", False))
+        term_reasons = a.smoothing_diagnostics.get("terminalDegradationReasons", [])
+        terminal_raw_fallback = bool(a.smoothing_diagnostics.get("terminalSafeRawFallbackUsed", False))
+        term_reason_text = ""
+        if term_refit and isinstance(term_reasons, list) and len(term_reasons) > 0:
+            term_reason_text = f" ({', '.join([str(r) for r in term_reasons[:4]])})"
         lines = [
             f"total runtime: {timing.get('totalRuntimeMs', 0.0):.2f} ms",
             (
@@ -947,6 +974,50 @@ class InteractivePlannerVisualizer:
                 f"{a.smoothing_diagnostics.get('attemptCount', 0)} "
                 f"(accepted={a.smoothing_diagnostics.get('acceptedAttempt', -1)})"
             ),
+            (
+                "terminal heat exposure [raw->smooth] "
+                f"start={raw.get('startTerminalHeatExposure', 0.0):.3f}->{smoothed.get('startTerminalHeatExposure', 0.0):.3f}, "
+                f"goal={raw.get('goalTerminalHeatExposure', 0.0):.3f}->{smoothed.get('goalTerminalHeatExposure', 0.0):.3f}"
+            ),
+            (
+                "terminal min wall clr [m] [raw->smooth] "
+                f"start={raw.get('startTerminalMinWallClearanceM', 0.0):.3f}->{smoothed.get('startTerminalMinWallClearanceM', 0.0):.3f}, "
+                f"goal={raw.get('goalTerminalMinWallClearanceM', 0.0):.3f}->{smoothed.get('goalTerminalMinWallClearanceM', 0.0):.3f}"
+            ),
+            (
+                "terminal min heat-region clr [m] [raw->smooth] "
+                f"start={_fmt_heat_clear(raw.get('startTerminalMinHeatRegionClearanceM', -1.0))}"
+                f"->{_fmt_heat_clear(smoothed.get('startTerminalMinHeatRegionClearanceM', -1.0))}, "
+                f"goal={_fmt_heat_clear(raw.get('goalTerminalMinHeatRegionClearanceM', -1.0))}"
+                f"->{_fmt_heat_clear(smoothed.get('goalTerminalMinHeatRegionClearanceM', -1.0))}"
+            ),
+            (
+                "terminal directness score [raw->smooth] "
+                f"start={raw.get('startTerminalDirectnessScore', 1.0):.3f}->{smoothed.get('startTerminalDirectnessScore', 1.0):.3f}, "
+                f"goal={raw.get('goalTerminalDirectnessScore', 1.0):.3f}->{smoothed.get('goalTerminalDirectnessScore', 1.0):.3f}"
+            ),
+            (
+                "terminal max curvature [smooth] "
+                f"start={smoothed.get('startTerminalMaxCurvature', 0.0):.4f}, "
+                f"goal={smoothed.get('goalTerminalMaxCurvature', 0.0):.4f}"
+            ),
+            (
+                "terminal hook/overshoot [smooth flags] "
+                f"start={smoothed.get('startTerminalHookOrOvershootFlag', 0.0):.0f}, "
+                f"goal={smoothed.get('goalTerminalHookOrOvershootFlag', 0.0):.0f}"
+            ),
+            (
+                "terminal monotonic violations [smooth] "
+                f"start={smoothed.get('startTerminalProjectionMonotonicViolations', 0.0):.0f}/"
+                f"{smoothed.get('startTerminalDistanceMonotonicViolations', 0.0):.0f}, "
+                f"goal={smoothed.get('goalTerminalProjectionMonotonicViolations', 0.0):.0f}/"
+                f"{smoothed.get('goalTerminalDistanceMonotonicViolations', 0.0):.0f}"
+            ),
+            (
+                "terminal degradation refit: "
+                f"{'yes' if term_refit else 'no'}{term_reason_text}"
+            ),
+            f"terminal-safe raw fallback: {'yes' if terminal_raw_fallback else 'no'}",
         ]
         self.diagnostics_var.set("\n".join(lines))
 

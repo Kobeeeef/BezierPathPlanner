@@ -274,9 +274,11 @@ def run_planner(
         if finite_heat_region_clearance.size
         else -1.0
     )
+    raw_diag = dict(smoothing_diagnostics.get("rawPathDiagnostics", {}))
     smoothed_diag = dict(smoothing_diagnostics.get("smoothedPathDiagnostics", {}))
     start_align_err = float(smoothed_diag.get("startEndpointAlignmentErrorDeg", 0.0))
     end_align_err = float(smoothed_diag.get("endEndpointAlignmentErrorDeg", 0.0))
+    terminal_guard_refit = bool(smoothing_diagnostics.get("terminalDegradationRefitTriggered", False))
     timer.stop_total()
     stage_timings = timer.as_dict()
     runtime_stats = local_runtime.stats.as_dict()
@@ -311,6 +313,22 @@ def run_planner(
         "bezierSegmentCount": len(bezier_segments),
         "smoothingAcceptedAttempt": int(smoothing_diagnostics.get("acceptedAttempt", -1)),
         "smoothingAttemptCount": int(smoothing_diagnostics.get("attemptCount", 0)),
+        "terminalSafeRawFallbackUsed": bool(smoothing_diagnostics.get("terminalSafeRawFallbackUsed", False)),
+        "terminalDegradationRefitTriggered": bool(terminal_guard_refit),
+        "startTerminalHeatExposureRaw": float(raw_diag.get("startTerminalHeatExposure", 0.0)),
+        "startTerminalHeatExposureSmoothed": float(smoothed_diag.get("startTerminalHeatExposure", 0.0)),
+        "goalTerminalHeatExposureRaw": float(raw_diag.get("goalTerminalHeatExposure", 0.0)),
+        "goalTerminalHeatExposureSmoothed": float(smoothed_diag.get("goalTerminalHeatExposure", 0.0)),
+        "startTerminalMinWallClearanceRawM": float(raw_diag.get("startTerminalMinWallClearanceM", 0.0)),
+        "startTerminalMinWallClearanceSmoothedM": float(smoothed_diag.get("startTerminalMinWallClearanceM", 0.0)),
+        "goalTerminalMinWallClearanceRawM": float(raw_diag.get("goalTerminalMinWallClearanceM", 0.0)),
+        "goalTerminalMinWallClearanceSmoothedM": float(smoothed_diag.get("goalTerminalMinWallClearanceM", 0.0)),
+        "startTerminalDirectnessScoreRaw": float(raw_diag.get("startTerminalDirectnessScore", 1.0)),
+        "startTerminalDirectnessScoreSmoothed": float(smoothed_diag.get("startTerminalDirectnessScore", 1.0)),
+        "goalTerminalDirectnessScoreRaw": float(raw_diag.get("goalTerminalDirectnessScore", 1.0)),
+        "goalTerminalDirectnessScoreSmoothed": float(smoothed_diag.get("goalTerminalDirectnessScore", 1.0)),
+        "startTerminalHookFlagSmoothed": float(smoothed_diag.get("startTerminalHookOrOvershootFlag", 0.0)),
+        "goalTerminalHookFlagSmoothed": float(smoothed_diag.get("goalTerminalHookOrOvershootFlag", 0.0)),
         "timingMs": stage_timings,
         "backend": backend_status,
         "runtimeCache": runtime_stats,

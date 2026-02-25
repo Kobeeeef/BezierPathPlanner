@@ -185,9 +185,10 @@ def extract_path_from_cost_to_go(
                     dist_start = float(np.linalg.norm(cur_world - start_np))
                     w_start = _lock_weight(dist_start, start_lock_m)
                     if w_start > 0.0:
+                        w_start_eff = 0.35 * w_start
                         blended = normalize(
-                            (1.0 - w_start) * np.array([dir_x, dir_y], dtype=float)
-                            + w_start * start_heading
+                            (1.0 - w_start_eff) * np.array([dir_x, dir_y], dtype=float)
+                            + w_start_eff * start_heading
                         )
                         if np.linalg.norm(blended) > 1e-12:
                             dir_x, dir_y = float(blended[0]), float(blended[1])
@@ -197,9 +198,11 @@ def extract_path_from_cost_to_go(
                     w_goal = _lock_weight(dist_goal, goal_lock_m)
                     if w_goal > 0.0:
                         to_goal = normalize(goal_np - cur_world)
-                        preferred = normalize(0.35 * to_goal + 0.65 * goal_heading)
+                        preferred = normalize(0.82 * to_goal + 0.18 * goal_heading)
+                        w_goal_eff = 0.45 * w_goal
                         blended = normalize(
-                            (1.0 - w_goal) * np.array([dir_x, dir_y], dtype=float) + w_goal * preferred
+                            (1.0 - w_goal_eff) * np.array([dir_x, dir_y], dtype=float)
+                            + w_goal_eff * preferred
                         )
                         if np.linalg.norm(blended) > 1e-12:
                             dir_x, dir_y = float(blended[0]), float(blended[1])
@@ -228,8 +231,13 @@ def extract_path_from_cost_to_go(
                     if terminal_lock:
                         cur_to_goal = goal_np - np.asarray([x_m, y_m], dtype=float)
                         nxt_to_goal = goal_np - cand_world
-                        cur_proj = float(np.dot(cur_to_goal, goal_heading))
-                        nxt_proj = float(np.dot(nxt_to_goal, goal_heading))
+                        approach_dir = normalize(cur_to_goal)
+                        if np.linalg.norm(approach_dir) <= 1e-12:
+                            approach_dir = goal_heading
+                        else:
+                            approach_dir = normalize(0.8 * approach_dir + 0.2 * goal_heading)
+                        cur_proj = float(np.dot(cur_to_goal, approach_dir))
+                        nxt_proj = float(np.dot(nxt_to_goal, approach_dir))
                         if (not cfg.allow_terminal_overshoot) and (nxt_proj < -overshoot_tol_m):
                             terminal_invalid = True
                         if nxt_proj > cur_proj + max(0.01, 0.15 * step_m):

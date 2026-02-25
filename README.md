@@ -14,8 +14,9 @@ It supports:
   - SciPy spline smoothing/fitting
   - cubic Bezier chain conversion with C1 join continuity
   - exact start/end position constraints
-  - start/goal approach heading locks (`start_approach_heading`, `goal_approach_heading`)
-  - endpoint blending/lock zones with automatic reject+refit on spikes/hooks
+  - heat/clearance-aware terminal-zone optimization at both start and goal
+  - optional start/goal approach heading hints (`start_approach_heading`, `goal_approach_heading`) with soft weighting
+  - endpoint blending/lock zones with automatic reject+refit on spikes/hooks/degradation
   - anti-hook checks near terminal zone (overshoot, monotonic approach, self-intersection)
 - Separate clearance layers (not heat inflation):
   - wall/blocked geometric clearance field in meters
@@ -24,6 +25,7 @@ It supports:
 - Separate heading channels:
   - `pathTangentHeading*` for geometric path direction
   - `holonomicRotation*` for robot-facing direction (independent profile by default)
+  - holonomic rotation does not force terminal geometric curvature
 - Curvature-aware speed profile (supports goal stop with end velocity `0.0`).
 - PathPlanner-concept waypoint export (anchors + control handles + end state).
 - Runtime engine for repeated replanning:
@@ -93,6 +95,7 @@ python main.py `
 - `--rotation-finish-progress`: fraction of path progress to finish rotating (default `0.8`)
 - `--start-approach-heading`, `--goal-approach-heading`: tangent approach constraints (deg)
 - `--start-approach-lock-distance-m`, `--goal-approach-lock-distance-m`: lock/blend lengths
+- `--start-heading`, `--end-heading`: holonomic facing profile endpoints (independent from geometric tangent unless you also set approach headings)
 - `--start-velocity`, `--end-velocity`: start/end speed targets used by speed profile generation
 - `--endpoint-zone-m`: endpoint blending/diagnostic distance (default `0.5`)
 - `--max-endpoint-curvature`: refit threshold near endpoints
@@ -149,6 +152,7 @@ In `runtime_fast` + `--write-artifacts`, planner writes:
 - endpoint approach alignment error (start/end)
 - lock-zone heading error (weighted + raw)
 - terminal anti-hook checks (overshoot + monotonic progress)
+- terminal raw-vs-smoothed heat exposure, clearance, directness, curvature, and hook flags (start + goal)
 - self-intersection checks
 - clearance stats (`requiredClearanceM`, min wall clearance, min heat-region clearance)
 - segment length stats

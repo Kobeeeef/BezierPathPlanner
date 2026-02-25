@@ -115,15 +115,13 @@ class PlannerConfig:
 
     @property
     def resolved_start_approach_heading_deg(self) -> float | None:
-        if self.start_approach_heading_deg is not None:
-            return self.start_approach_heading_deg
-        return self.start_heading_deg
+        # Keep geometric terminal approach heading independent from holonomic facing.
+        return self.start_approach_heading_deg
 
     @property
     def resolved_goal_approach_heading_deg(self) -> float | None:
-        if self.goal_approach_heading_deg is not None:
-            return self.goal_approach_heading_deg
-        return self.end_heading_deg
+        # Keep geometric terminal approach heading independent from holonomic facing.
+        return self.goal_approach_heading_deg
 
     @property
     def footprint_radius_m(self) -> float:
