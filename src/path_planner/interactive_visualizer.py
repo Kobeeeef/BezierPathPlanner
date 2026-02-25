@@ -315,6 +315,13 @@ class InteractivePlannerVisualizer:
         section = ttk.LabelFrame(parent, text="Smoothing")
         section.pack(fill=tk.X, padx=10, pady=6)
         cfg = self._default_cfg
+        self._add_choice(
+            section,
+            key="geometry_mode",
+            label="geometry_mode",
+            default=cfg.geometry_mode,
+            values=["raw_only", "raw_preferred", "spline_then_bezier", "bezier_optimized"],
+        )
         self._add_check(section, key="enable_smoothing", label="Enable smoothing", default=cfg.enable_smoothing)
         self._add_choice(
             section,
@@ -670,6 +677,16 @@ class InteractivePlannerVisualizer:
         smoothing_diag = artifacts.smoothing_diagnostics or {}
         smoothed = smoothing_diag.get("smoothedPathDiagnostics", {}) if isinstance(smoothing_diag, dict) else {}
         warns: list[str] = []
+        geom_decision = str(smoothing_diag.get("geometryDecision", "")).strip().lower()
+        if "fallback" in geom_decision:
+            warns.append("raw-preferred fallback activated")
+        geom_reasons = smoothing_diag.get("geometryDecisionReasons", [])
+        if (
+            isinstance(geom_reasons, list)
+            and geom_reasons
+            and not (len(geom_reasons) == 1 and str(geom_reasons[0]) == "geometry_mode_raw_only")
+        ):
+            warns.append("final geometry rejected: " + ", ".join([str(r) for r in geom_reasons[:3]]))
         if bool(smoothing_diag.get("refitTriggered", False)):
             warns.append("smoothing refit/selection triggered")
         if bool(smoothing_diag.get("terminalSafeRawFallbackUsed", False)):
@@ -970,6 +987,34 @@ class InteractivePlannerVisualizer:
             ),
             f"planner/backend: {s.get('plannerMode', '-')}/{a.backend_status.get('used', 'cpu')}",
             (
+                "geometry mode/decision/source: "
+                f"{s.get('geometryMode', '-')}/"
+                f"{s.get('geometryDecision', '-')}/"
+                f"{s.get('finalGeometrySource', '-')}"
+            ),
+            (
+                "raw vs final [ratio]: "
+                f"heat={s.get('rawVsFinalHeatCostRatio', 1.0):.3f}, "
+                f"obj={s.get('rawVsFinalObjectiveCostRatio', 1.0):.3f}, "
+                f"len={s.get('rawVsFinalLengthRatio', 1.0):.3f}, "
+                f"curv={s.get('rawVsFinalMaxCurvatureRatio', 1.0):.3f}"
+            ),
+            (
+                "raw vs final [delta]: "
+                f"wallClr={s.get('rawVsFinalMinWallClearanceDeltaM', 0.0):+.3f} m, "
+                f"heatClr={s.get('rawVsFinalMinHeatRegionClearanceDeltaM', 0.0):+.3f} m, "
+                f"maxCurv={s.get('rawVsFinalMaxCurvatureDelta', 0.0):+.3f}"
+            ),
+            (
+                "raw vs final terminal: "
+                f"direct(start/goal)="
+                f"{s.get('rawVsFinalStartTerminalDirectnessDelta', 0.0):+.3f}/"
+                f"{s.get('rawVsFinalGoalTerminalDirectnessDelta', 0.0):+.3f}, "
+                f"heatExp(start/goal)="
+                f"{s.get('rawVsFinalStartTerminalHeatExposureRatio', 1.0):.3f}/"
+                f"{s.get('rawVsFinalGoalTerminalHeatExposureRatio', 1.0):.3f}"
+            ),
+            (
                 "smoothing attempts: "
                 f"{a.smoothing_diagnostics.get('attemptCount', 0)} "
                 f"(accepted={a.smoothing_diagnostics.get('acceptedAttempt', -1)})"
@@ -1018,6 +1063,13 @@ class InteractivePlannerVisualizer:
                 f"{'yes' if term_refit else 'no'}{term_reason_text}"
             ),
             f"terminal-safe raw fallback: {'yes' if terminal_raw_fallback else 'no'}",
+            (
+                "geometry decision reasons: "
+                + ", ".join([str(r) for r in a.smoothing_diagnostics.get("geometryDecisionReasons", [])[:5]])
+                if isinstance(a.smoothing_diagnostics.get("geometryDecisionReasons", []), list)
+                and len(a.smoothing_diagnostics.get("geometryDecisionReasons", [])) > 0
+                else "geometry decision reasons: none"
+            ),
         ]
         self.diagnostics_var.set("\n".join(lines))
 
@@ -1340,6 +1392,11 @@ class InteractivePlannerVisualizer:
             sampled_points=self._artifacts.sampled_smoothed_points,
             sampled_path_tangent_headings_rad=self._artifacts.sampled_path_tangent_headings_rad,
             sampled_holonomic_rotations_rad=self._artifacts.sampled_holonomic_rotations_rad,
+            raw_path_world_resampled=self._artifacts.raw_path_world_resampled,
+            raw_path_tangent_headings_rad=self._artifacts.raw_path_tangent_headings_rad,
+            raw_path_holonomic_rotations_rad=self._artifacts.raw_path_holonomic_rotations_rad,
+            raw_speed_profile=self._artifacts.raw_speed_profile,
+            final_geometry_source=self._artifacts.final_geometry_source,
             summary=self._artifacts.summary,
             required_clearance_m=self._artifacts.required_clearance_m,
             backend_status=self._artifacts.backend_status,
@@ -1465,6 +1522,7 @@ class InteractivePlannerVisualizer:
 
             cfg = PlannerConfig(
                 runtime_mode="runtime_fast" if runtime_fast else "debug_diagnostics",
+                geometry_mode=self._read_choice("geometry_mode", default=self._default_cfg.geometry_mode),
                 compute_backend=self._read_choice("compute_backend", default="cpu"),
                 cache_goal_fields=self._read_bool("cache_goal_fields", default=True),
                 max_goal_field_cache_entries=self._read_int("max_goal_cache_entries", default=16, minimum=1),

@@ -18,6 +18,7 @@ It supports:
   - optional start/goal approach heading hints (`start_approach_heading`, `goal_approach_heading`) with soft weighting
   - endpoint blending/lock zones with automatic reject+refit on spikes/hooks/degradation
   - anti-hook checks near terminal zone (overshoot, monotonic approach, self-intersection)
+  - `geometry_mode=raw_preferred` default: raw path geometry is baseline and smoother output is rejected/fallback-to-raw if quality degrades
 - Separate clearance layers (not heat inflation):
   - wall/blocked geometric clearance field in meters
   - optional distance-to-high-heat-region field for spacing preference
@@ -84,6 +85,7 @@ python main.py `
 
 - `--planner`: `fmm` or `dijkstra_approx`
 - `--mode`: `runtime_fast` (low-latency, minimal overhead) or `debug_diagnostics` (full artifacts)
+- `--geometry-mode`: `raw_only`, `raw_preferred` (default), `spline_then_bezier`, `bezier_optimized`
 - `--compute-backend`: `cpu` (default) or `gpu` (fallbacks to CPU if unavailable)
 - `--cache-goal-fields` / `--no-cache-goal-fields`: reuse propagation fields for repeated goals
 - `--max-goal-cache-entries`: LRU cache size for goal fields
@@ -153,6 +155,8 @@ In `runtime_fast` + `--write-artifacts`, planner writes:
 - lock-zone heading error (weighted + raw)
 - terminal anti-hook checks (overshoot + monotonic progress)
 - terminal raw-vs-smoothed heat exposure, clearance, directness, curvature, and hook flags (start + goal)
+- geometry decision report (accepted final / fallback to raw / raw-only), reasons, and final geometry source
+- runtime-friendly raw path stream (`rawPathWorldResampled` / `rawSampledPath`) for direct follower integration
 - self-intersection checks
 - clearance stats (`requiredClearanceM`, min wall clearance, min heat-region clearance)
 - segment length stats

@@ -42,6 +42,7 @@ def _parse_blocked_sentinel(value: str | None) -> float | None:
 def _build_cfg(args: argparse.Namespace, scenario: Scenario) -> PlannerConfig:
     cfg = PlannerConfig(
         runtime_mode=args.mode,
+        geometry_mode=args.geometry_mode,
         compute_backend=args.compute_backend,
         cache_goal_fields=args.cache_goal_fields,
         max_goal_field_cache_entries=args.max_goal_cache_entries,
@@ -121,8 +122,10 @@ def _serialize_summary_payload(
     cfg: PlannerConfig,
 ) -> dict[str, Any]:
     sampled_heading_profile: list[dict[str, float]] = []
+    raw_heading_profile: list[dict[str, float]] = []
     n = len(artifacts.sampled_smoothed_points)
     speed_s = [float(p.get("s", 0.0)) for p in artifacts.speed_profile]
+    raw_speed_s = [float(p.get("s", 0.0)) for p in artifacts.raw_speed_profile]
     for i in range(n):
         tangent_rad = (
             float(artifacts.sampled_path_tangent_headings_rad[i])
@@ -140,6 +143,30 @@ def _serialize_summary_payload(
                 "s": speed_s[i] if i < len(speed_s) else 0.0,
                 "x": float(artifacts.sampled_smoothed_points[i, 0]),
                 "y": float(artifacts.sampled_smoothed_points[i, 1]),
+                "pathTangentHeadingDeg": float(math.degrees(tangent_rad)),
+                "pathTangentHeadingRad": tangent_rad,
+                "holonomicRotationDeg": float(math.degrees(holo_rad)),
+                "holonomicRotationRad": holo_rad,
+            }
+        )
+    raw_n = len(artifacts.raw_path_world_resampled)
+    for i in range(raw_n):
+        tangent_rad = (
+            float(artifacts.raw_path_tangent_headings_rad[i])
+            if i < len(artifacts.raw_path_tangent_headings_rad)
+            else 0.0
+        )
+        holo_rad = (
+            float(artifacts.raw_path_holonomic_rotations_rad[i])
+            if i < len(artifacts.raw_path_holonomic_rotations_rad)
+            else tangent_rad
+        )
+        raw_heading_profile.append(
+            {
+                "idx": i,
+                "s": raw_speed_s[i] if i < len(raw_speed_s) else 0.0,
+                "x": float(artifacts.raw_path_world_resampled[i, 0]),
+                "y": float(artifacts.raw_path_world_resampled[i, 1]),
                 "pathTangentHeadingDeg": float(math.degrees(tangent_rad)),
                 "pathTangentHeadingRad": tangent_rad,
                 "holonomicRotationDeg": float(math.degrees(holo_rad)),
@@ -164,8 +191,12 @@ def _serialize_summary_payload(
             "heatRegionClearanceEnabled": cfg.heat_region_clearance_enabled,
         },
         "rawPathPoints": [{"x": x, "y": y} for x, y in artifacts.raw_path_world],
+        "rawPathWorldResampled": [
+            {"x": float(p[0]), "y": float(p[1])} for p in np.asarray(artifacts.raw_path_world_resampled, dtype=float)
+        ],
         "smoothedBezierSegments": [seg.as_dict() for seg in artifacts.bezier_segments],
         "sampledHeadingProfile": sampled_heading_profile,
+        "rawSampledHeadingProfile": raw_heading_profile,
         "pathPlannerWaypoints": waypoints,
         "smoothingDiagnostics": artifacts.smoothing_diagnostics,
         "goalEndState": {
@@ -184,6 +215,7 @@ def _serialize_summary_payload(
         },
         "tuningKnobs": {
             "runtime_mode": cfg.runtime_mode,
+            "geometry_mode": cfg.geometry_mode,
             "compute_backend": cfg.compute_backend,
             "cache_goal_fields": cfg.cache_goal_fields,
             "max_goal_field_cache_entries": cfg.max_goal_field_cache_entries,
@@ -200,6 +232,8 @@ def _serialize_summary_payload(
             "max_smoothing_refits": cfg.max_smoothing_refits,
             "runtime_fast_max_refits": cfg.runtime_fast_max_refits,
             "bezier_target_segment_length_m": cfg.bezier_target_segment_length_m,
+            "raw_reference_sample_ds_m": cfg.raw_reference_sample_ds_m,
+            "raw_linear_bezier_ds_m": cfg.raw_linear_bezier_ds_m,
             "max_tangent_jump_deg": cfg.max_tangent_jump_deg,
             "max_tangent_mag_jump_ratio": cfg.max_tangent_mag_jump_ratio,
             "curvature_spike_factor": cfg.curvature_spike_factor,
@@ -246,6 +280,16 @@ def _serialize_summary_payload(
             "heat_region_clearance_weight": cfg.heat_region_clearance_weight,
             "heat_region_clearance_decay_m": cfg.heat_region_clearance_decay_m,
             "enforce_hard_clearance_if_feasible": cfg.enforce_hard_clearance_if_feasible,
+            "raw_preferred_max_heat_cost_ratio": cfg.raw_preferred_max_heat_cost_ratio,
+            "raw_preferred_max_objective_cost_ratio": cfg.raw_preferred_max_objective_cost_ratio,
+            "raw_preferred_max_length_ratio": cfg.raw_preferred_max_length_ratio,
+            "raw_preferred_max_curvature_ratio": cfg.raw_preferred_max_curvature_ratio,
+            "raw_preferred_max_curvature_abs_increase": cfg.raw_preferred_max_curvature_abs_increase,
+            "raw_preferred_max_wall_clearance_drop_m": cfg.raw_preferred_max_wall_clearance_drop_m,
+            "raw_preferred_max_heat_region_clearance_drop_m": cfg.raw_preferred_max_heat_region_clearance_drop_m,
+            "raw_preferred_max_terminal_directness_drop": cfg.raw_preferred_max_terminal_directness_drop,
+            "raw_preferred_max_terminal_heat_exposure_ratio": cfg.raw_preferred_max_terminal_heat_exposure_ratio,
+            "raw_preferred_length_cost_improve_ratio": cfg.raw_preferred_length_cost_improve_ratio,
             "clearance_refit_threshold_m": cfg.clearance_refit_threshold_m,
             "enable_smoothing": cfg.enable_smoothing,
             "enable_clearance_constraints": cfg.enable_clearance_constraints,
@@ -351,6 +395,7 @@ def _print_summary_line(scenario: Scenario, artifacts: PlannerArtifacts) -> None
         f"[{scenario.name}] mode={s['plannerMode']} rawCost={s['rawIntegratedCost']:.2f} "
         f"smoothCost={s['smoothedIntegratedCost']:.2f} rawLen={s['rawLengthM']:.2f}m "
         f"smoothLen={s['smoothedLengthM']:.2f}m segments={int(s['bezierSegmentCount'])} "
+        f"geom={s.get('finalGeometrySource', '-')} decision={s.get('geometryDecision', '-')} "
         f"minWallClr={s['minWallClearanceM']:.3f}m reqClr={s['requiredClearanceM']:.3f}m "
         f"lat={total_ms:.2f}ms"
     )
@@ -385,6 +430,11 @@ def _run_single(
         sampled_points=artifacts.sampled_smoothed_points,
         sampled_path_tangent_headings_rad=artifacts.sampled_path_tangent_headings_rad,
         sampled_holonomic_rotations_rad=artifacts.sampled_holonomic_rotations_rad,
+        raw_path_world_resampled=artifacts.raw_path_world_resampled,
+        raw_path_tangent_headings_rad=artifacts.raw_path_tangent_headings_rad,
+        raw_path_holonomic_rotations_rad=artifacts.raw_path_holonomic_rotations_rad,
+        raw_speed_profile=artifacts.raw_speed_profile,
+        final_geometry_source=artifacts.final_geometry_source,
         summary=artifacts.summary,
         required_clearance_m=artifacts.required_clearance_m,
         backend_status=artifacts.backend_status,
@@ -465,6 +515,11 @@ def _run_single(
         sampled_points=artifacts.sampled_smoothed_points,
         sampled_path_tangent_headings_rad=artifacts.sampled_path_tangent_headings_rad,
         sampled_holonomic_rotations_rad=artifacts.sampled_holonomic_rotations_rad,
+        raw_path_world_resampled=artifacts.raw_path_world_resampled,
+        raw_path_tangent_headings_rad=artifacts.raw_path_tangent_headings_rad,
+        raw_path_holonomic_rotations_rad=artifacts.raw_path_holonomic_rotations_rad,
+        raw_speed_profile=artifacts.raw_speed_profile,
+        final_geometry_source=artifacts.final_geometry_source,
         summary=artifacts.summary,
         required_clearance_m=artifacts.required_clearance_m,
         backend_status=artifacts.backend_status,
@@ -492,6 +547,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--interactive-visualizer", action="store_true")
     p.add_argument("--mode", default="debug_diagnostics", choices=["runtime_fast", "debug_diagnostics"])
+    p.add_argument(
+        "--geometry-mode",
+        default="raw_preferred",
+        choices=["raw_only", "raw_preferred", "spline_then_bezier", "bezier_optimized"],
+    )
     p.add_argument("--compute-backend", default="cpu", choices=["cpu", "gpu"])
     p.add_argument("--cache-goal-fields", dest="cache_goal_fields", action="store_true")
     p.add_argument("--no-cache-goal-fields", dest="cache_goal_fields", action="store_false")

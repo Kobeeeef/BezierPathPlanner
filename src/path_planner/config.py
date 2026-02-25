@@ -11,11 +11,13 @@ CostMode = Literal["density", "inverse_speed"]
 HolonomicRotationMode = Literal["independent_profile", "tangent_follow"]
 ObjectShape = Literal["rectangle", "circle"]
 RuntimeMode = Literal["runtime_fast", "debug_diagnostics"]
+GeometryMode = Literal["raw_only", "raw_preferred", "spline_then_bezier", "bezier_optimized"]
 
 
 @dataclass(frozen=True)
 class PlannerConfig:
     runtime_mode: RuntimeMode = "debug_diagnostics"
+    geometry_mode: GeometryMode = "raw_preferred"
     compute_backend: ComputeBackend = "cpu"
     stage_timing_enabled: bool = True
     cache_goal_fields: bool = True
@@ -79,6 +81,18 @@ class PlannerConfig:
     hook_penalty_weight: float = 3.0
     segment_count_penalty_weight: float = 0.14
     min_terminal_progress_ratio: float = 0.92
+    raw_reference_sample_ds_m: float = 0.08
+    raw_linear_bezier_ds_m: float = 0.18
+    raw_preferred_max_heat_cost_ratio: float = 1.0
+    raw_preferred_max_objective_cost_ratio: float = 1.0
+    raw_preferred_max_length_ratio: float = 1.015
+    raw_preferred_max_curvature_ratio: float = 1.16
+    raw_preferred_max_curvature_abs_increase: float = 0.30
+    raw_preferred_max_wall_clearance_drop_m: float = 0.0
+    raw_preferred_max_heat_region_clearance_drop_m: float = 0.0
+    raw_preferred_max_terminal_directness_drop: float = 0.02
+    raw_preferred_max_terminal_heat_exposure_ratio: float = 1.0
+    raw_preferred_length_cost_improve_ratio: float = 0.995
     enable_smoothing: bool = True
     enable_clearance_constraints: bool = True
     clearance_refit_threshold_m: float = 0.0

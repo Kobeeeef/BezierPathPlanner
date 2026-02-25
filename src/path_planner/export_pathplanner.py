@@ -180,6 +180,11 @@ def build_runtime_payload_compact(
     sampled_points: np.ndarray,
     sampled_path_tangent_headings_rad: np.ndarray,
     sampled_holonomic_rotations_rad: np.ndarray,
+    raw_path_world_resampled: np.ndarray | None = None,
+    raw_path_tangent_headings_rad: np.ndarray | None = None,
+    raw_path_holonomic_rotations_rad: np.ndarray | None = None,
+    raw_speed_profile: list[dict[str, float]] | None = None,
+    final_geometry_source: str | None = None,
     summary: dict[str, Any],
     required_clearance_m: float,
     backend_status: dict[str, str],
@@ -201,15 +206,62 @@ def build_runtime_payload_compact(
             }
         )
 
+    raw_pts = (
+        np.asarray(raw_path_world_resampled, dtype=float)
+        if raw_path_world_resampled is not None
+        else np.empty((0, 2), dtype=float)
+    )
+    raw_tangent = (
+        np.asarray(raw_path_tangent_headings_rad, dtype=float)
+        if raw_path_tangent_headings_rad is not None
+        else np.empty((0,), dtype=float)
+    )
+    raw_holo = (
+        np.asarray(raw_path_holonomic_rotations_rad, dtype=float)
+        if raw_path_holonomic_rotations_rad is not None
+        else np.empty((0,), dtype=float)
+    )
+    raw_speed = raw_speed_profile if raw_speed_profile is not None else []
+    raw_sampled: list[dict[str, float]] = []
+    for i in range(len(raw_pts)):
+        tangent = float(raw_tangent[i]) if i < len(raw_tangent) else 0.0
+        holo = float(raw_holo[i]) if i < len(raw_holo) else tangent
+        s = float(raw_speed[i].get("s", 0.0)) if i < len(raw_speed) else 0.0
+        v = float(raw_speed[i].get("v", 0.0)) if i < len(raw_speed) else 0.0
+        raw_sampled.append(
+            {
+                "x": float(raw_pts[i, 0]),
+                "y": float(raw_pts[i, 1]),
+                "s": s,
+                "v": v,
+                "pathTangentHeadingRad": tangent,
+                "pathTangentHeadingDeg": float(math.degrees(tangent)),
+                "holonomicRotationRad": holo,
+                "holonomicRotationDeg": float(math.degrees(holo)),
+            }
+        )
+
+    resolved_final_source = (
+        str(final_geometry_source)
+        if final_geometry_source is not None
+        else str(summary.get("finalGeometrySource", "bezier"))
+    )
+    runtime_path_type = "raw_resampled_polyline" if "raw" in resolved_final_source.lower() else "bezier_sampled"
+
     return {
         "format": "PathPlanner-runtime-compact",
         "runtimeMode": cfg.runtime_mode,
+        "geometryMode": cfg.geometry_mode,
+        "runtimePathType": runtime_path_type,
+        "finalGeometrySource": resolved_final_source,
         "plannerMode": cfg.planner_mode,
         "computeBackend": backend_status,
         "summary": summary,
         "requiredClearanceM": float(required_clearance_m),
         "bezierSegments": [seg.as_dict() for seg in bezier_segments],
         "sampledPath": sampled,
+        "rawPathWorldResampled": [{"x": float(p[0]), "y": float(p[1])} for p in raw_pts],
+        "rawSampledPath": raw_sampled,
         "goalEndState": {
             "velocityMps": float(cfg.end_velocity_mps),
             "rotationDeg": None if cfg.end_heading_deg is None else float(cfg.end_heading_deg),
