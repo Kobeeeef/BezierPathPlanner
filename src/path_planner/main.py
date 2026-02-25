@@ -414,7 +414,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--scenario",
         default="all",
-        choices=["all", "hot_island", "uniform_high", "blocked_gap", "double_hot_mid_corridor"],
+        choices=[
+            "all",
+            "hot_island",
+            "uniform_high",
+            "blocked_gap",
+            "double_hot_mid_corridor",
+            "small_islands_weave",
+        ],
     )
     p.add_argument("--planner", default="fmm", choices=["fmm", "dijkstra_approx"])
     p.add_argument("--cost-mode", default="density", choices=["density", "inverse_speed"])
@@ -509,6 +516,7 @@ def run_cli(argv: list[str] | None = None) -> int:
             scenarios["hot_island"],
             scenarios["uniform_high"],
             scenarios["double_hot_mid_corridor"],
+            scenarios["small_islands_weave"],
         ]
     else:
         run_list = [scenarios[args.scenario]]

@@ -19,7 +19,7 @@
     "safeSpaceM": 0.12,
     "requiredClearanceM": 0.7210407640085653
   },
-  "holonomicRotationMode": "tangent_follow",
+  "holonomicRotationMode": "independent_profile",
   "rotationFinishProgress": 0.8,
   "waypoints": [
     {
@@ -52,9 +52,9 @@
         "y": 1.6333256523275734
       },
       "pathTangentHeadingDeg": -36.82765258042092,
-      "holonomicRotationDeg": -36.82765258042092,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": -0.6427637933089307,
-      "holonomicRotationRad": -0.6427637933089307,
+      "holonomicRotationRad": 0.0,
       "progress": 0.24023137833729266
     },
     {
@@ -71,9 +71,9 @@
         "y": 0.9494244390405377
       },
       "pathTangentHeadingDeg": -27.121476255050396,
-      "holonomicRotationDeg": -27.121476255050396,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": -0.47335905865209077,
-      "holonomicRotationRad": -0.47335905865209077,
+      "holonomicRotationRad": 0.0,
       "progress": 0.3626730418082464
     },
     {
@@ -90,9 +90,9 @@
         "y": 0.5929482038274302
       },
       "pathTangentHeadingDeg": -12.530566464044908,
-      "holonomicRotationDeg": -12.530566464044908,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": -0.2186996419375673,
-      "holonomicRotationRad": -0.2186996419375673,
+      "holonomicRotationRad": 0.0,
       "progress": 0.46052016566924264
     },
     {
@@ -109,9 +109,9 @@
         "y": 0.6793544009536963
       },
       "pathTangentHeadingDeg": 7.946291797181134,
-      "holonomicRotationDeg": 7.946291797181134,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": 0.13868895518502825,
-      "holonomicRotationRad": 0.13868895518502825,
+      "holonomicRotationRad": 0.0,
       "progress": 0.54755136935954
     },
     {
@@ -128,9 +128,9 @@
         "y": 1.1974730774969278
       },
       "pathTangentHeadingDeg": 24.32508341736365,
-      "holonomicRotationDeg": 24.32508341736365,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": 0.4245527964552697,
-      "holonomicRotationRad": 0.4245527964552697,
+      "holonomicRotationRad": 0.0,
       "progress": 0.6453352321079032
     },
     {
@@ -147,9 +147,9 @@
         "y": 2.23636261076048
       },
       "pathTangentHeadingDeg": 40.31189145074426,
-      "holonomicRotationDeg": 40.31189145074426,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": 0.7035752335220409,
-      "holonomicRotationRad": 0.7035752335220409,
+      "holonomicRotationRad": 0.0,
       "progress": 0.7676995873091658
     },
     {
@@ -312,38 +312,38 @@
     {
       "waypointIndex": 1,
       "progress": 0.24023137833729266,
-      "holonomicRotationDeg": -36.82765258042092,
-      "holonomicRotationRad": -0.6427637933089307
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "waypointIndex": 2,
       "progress": 0.3626730418082464,
-      "holonomicRotationDeg": -27.121476255050396,
-      "holonomicRotationRad": -0.47335905865209077
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "waypointIndex": 3,
       "progress": 0.46052016566924264,
-      "holonomicRotationDeg": -12.530566464044908,
-      "holonomicRotationRad": -0.2186996419375673
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "waypointIndex": 4,
       "progress": 0.54755136935954,
-      "holonomicRotationDeg": 7.946291797181134,
-      "holonomicRotationRad": 0.13868895518502825
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "waypointIndex": 5,
       "progress": 0.6453352321079032,
-      "holonomicRotationDeg": 24.32508341736365,
-      "holonomicRotationRad": 0.4245527964552697
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "waypointIndex": 6,
       "progress": 0.7676995873091658,
-      "holonomicRotationDeg": 40.31189145074426,
-      "holonomicRotationRad": 0.7035752335220409
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "waypointIndex": 7,

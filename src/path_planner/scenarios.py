@@ -154,10 +154,61 @@ def make_double_hot_mid_corridor_scenario() -> Scenario:
     )
 
 
+def make_small_islands_weave_scenario() -> Scenario:
+    h, w = 104, 180
+    res = 0.08
+    yy, xx = np.mgrid[0:h, 0:w]
+
+    heat = np.full((h, w), 3.1, dtype=float)
+    heat += 0.24 * np.sin(xx / 21.0) + 0.20 * np.cos(yy / 15.0)
+
+    # A chain of small hot islands with alternating vertical placement to force
+    # repeated up/down turns, then a final rise toward the goal.
+    islands: list[tuple[float, float, float, float]] = [
+        (0.31, 0.61, 0.065, 19.5),
+        (0.49, 0.46, 0.064, 20.0),
+
+        (0.77, 0.66, 0.060, 18.5),
+        (0.77, 0.26, 0.090, 18.5),
+        (0.87, 0.56, 0.080, 18.5),
+        (0.77, 0.16, 0.090, 18.5),
+    ]
+    scale = float(min(h, w))
+    for x_frac, y_frac, sigma_frac, amp in islands:
+        cx = x_frac * w
+        cy = y_frac * h
+        sigma = sigma_frac * scale
+        heat += amp * np.exp(-(((xx - cx) ** 2) + ((yy - cy) ** 2)) / (2 * sigma**2))
+
+    # Keep an overall rightward corridor so endpoint approach can stay clean.
+    ribbon_mid = 0.50 * h - 0.10 * h * np.sin((xx / w) * 2.2 * np.pi)
+    heat -= 1.2 * np.exp(-((yy - ribbon_mid) ** 2) / (2 * (0.075 * h) ** 2))
+    heat = np.clip(heat, 0.35, None)
+
+    start_xy = (7 * res, 0.48 * h * res)
+    goal_xy = ((w - 8) * res, 0.34 * h * res)
+    return Scenario(
+        name="small_islands_weave",
+        description=(
+            "Multiple small hot islands arranged to induce repeated up/down "
+            "curving with a final rise into the goal."
+        ),
+        heat=heat,
+        start_xy=start_xy,
+        goal_xy=goal_xy,
+        resolution_m_per_cell=res,
+        start_heading_deg=0.0,
+        end_heading_deg=0.0,
+        start_approach_heading_deg=0.0,
+        goal_approach_heading_deg=0.0,
+    )
+
+
 def get_scenarios() -> dict[str, Scenario]:
     return {
         "hot_island": make_hot_island_scenario(),
         "uniform_high": make_uniform_high_heat_scenario(),
         "blocked_gap": make_blocked_gap_scenario(),
         "double_hot_mid_corridor": make_double_hot_mid_corridor_scenario(),
+        "small_islands_weave": make_small_islands_weave_scenario(),
     }

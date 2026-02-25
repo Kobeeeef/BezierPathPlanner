@@ -1,0 +1,398 @@
+{
+  "format": "PathPlanner-concept",
+  "notes": [
+    "Heat is high-cost traversable terrain.",
+    "Blocked cells are explicitly infinite/untraversable.",
+    "Path tangent heading is geometric path direction, not robot-facing heading."
+  ],
+  "approachConstraints": {
+    "startApproachHeadingDeg": 0.0,
+    "goalApproachHeadingDeg": 0.0,
+    "startApproachLockDistanceM": 0.5,
+    "goalApproachLockDistanceM": 0.5
+  },
+  "clearanceModel": {
+    "objectShape": "rectangle",
+    "objectWidthM": 0.85,
+    "objectHeightM": 0.85,
+    "footprintRadiusM": 0.6010407640085653,
+    "safeSpaceM": 0.12,
+    "requiredClearanceM": 0.7210407640085653
+  },
+  "holonomicRotationMode": "independent_profile",
+  "rotationFinishProgress": 0.8,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 0.56,
+        "y": 3.9936000000000003
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.6089057751816813,
+        "y": 3.9936000000000003
+      },
+      "pathTangentHeadingDeg": 0.0,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": 0.0,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.0
+    },
+    {
+      "anchor": {
+        "x": 3.7706316835920064,
+        "y": 3.3332839468375615
+      },
+      "prevControl": {
+        "x": 3.1467846295764557,
+        "y": 3.342519499924951
+      },
+      "nextControl": {
+        "x": 4.394478737607558,
+        "y": 3.324048393750172
+      },
+      "pathTangentHeadingDeg": -0.8481559022292927,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": -0.014803113064124272,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.23121682106362632
+    },
+    {
+      "anchor": {
+        "x": 5.183198102671916,
+        "y": 3.925157276361393
+      },
+      "prevControl": {
+        "x": 4.816007390291239,
+        "y": 3.724826865471433
+      },
+      "nextControl": {
+        "x": 5.550388815052593,
+        "y": 4.125487687251352
+      },
+      "pathTangentHeadingDeg": 28.61581905690987,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": 0.49944026069801584,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.3392520176801661
+    },
+    {
+      "anchor": {
+        "x": 6.16960582333278,
+        "y": 4.642106471276628
+      },
+      "prevControl": {
+        "x": 5.870814489344234,
+        "y": 4.458827443714322
+      },
+      "nextControl": {
+        "x": 6.468397157321327,
+        "y": 4.8253854988389335
+      },
+      "pathTangentHeadingDeg": 31.525011742784447,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": 0.5502152516414643,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.4252703063272137
+    },
+    {
+      "anchor": {
+        "x": 7.102405193805842,
+        "y": 5.102401624978248
+      },
+      "prevControl": {
+        "x": 6.775473119410616,
+        "y": 5.025735885818699
+      },
+      "nextControl": {
+        "x": 7.429337268201067,
+        "y": 5.179067364137797
+      },
+      "pathTangentHeadingDeg": 13.197427423294737,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": 0.23033856132948455,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.4986445786661734
+    },
+    {
+      "anchor": {
+        "x": 8.140174451759023,
+        "y": 5.104205825530508
+      },
+      "prevControl": {
+        "x": 7.795062022762793,
+        "y": 5.163454801562002
+      },
+      "nextControl": {
+        "x": 8.485286880755254,
+        "y": 5.044956849499014
+      },
+      "pathTangentHeadingDeg": -9.741584462895943,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": -0.17002272323865758,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.5718485066830885
+    },
+    {
+      "anchor": {
+        "x": 9.296974736198376,
+        "y": 4.7256374539663675
+      },
+      "prevControl": {
+        "x": 8.909846838752697,
+        "y": 4.886335188605325
+      },
+      "nextControl": {
+        "x": 9.684102633644054,
+        "y": 4.56493971932741
+      },
+      "pathTangentHeadingDeg": -22.543456878021402,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": -0.39345754730283516,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.6577071237357985
+    },
+    {
+      "anchor": {
+        "x": 10.687194481653398,
+        "y": 4.046931597595257
+      },
+      "prevControl": {
+        "x": 10.108745827207745,
+        "y": 4.292778978708745
+      },
+      "nextControl": {
+        "x": 11.265643136099051,
+        "y": 3.8010842164817684
+      },
+      "pathTangentHeadingDeg": -23.026054364835666,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": -0.401880462409594,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.7668351420064461
+    },
+    {
+      "anchor": {
+        "x": 13.76,
+        "y": 2.8287999999999998
+      },
+      "prevControl": {
+        "x": 12.70225703392248,
+        "y": 2.8287999999999998
+      },
+      "nextControl": null,
+      "pathTangentHeadingDeg": 0.0,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": 0.0,
+      "holonomicRotationRad": 0.0,
+      "progress": 1.0
+    }
+  ],
+  "bezierSegments": [
+    {
+      "P0": {
+        "x": 0.56,
+        "y": 3.9936000000000003
+      },
+      "P1": {
+        "x": 1.6089057751816813,
+        "y": 3.9936000000000003
+      },
+      "P2": {
+        "x": 3.1467846295764557,
+        "y": 3.342519499924951
+      },
+      "P3": {
+        "x": 3.7706316835920064,
+        "y": 3.3332839468375615
+      }
+    },
+    {
+      "P0": {
+        "x": 3.7706316835920064,
+        "y": 3.3332839468375615
+      },
+      "P1": {
+        "x": 4.394478737607558,
+        "y": 3.324048393750172
+      },
+      "P2": {
+        "x": 4.816007390291239,
+        "y": 3.724826865471433
+      },
+      "P3": {
+        "x": 5.183198102671916,
+        "y": 3.925157276361393
+      }
+    },
+    {
+      "P0": {
+        "x": 5.183198102671916,
+        "y": 3.925157276361393
+      },
+      "P1": {
+        "x": 5.550388815052593,
+        "y": 4.125487687251352
+      },
+      "P2": {
+        "x": 5.870814489344234,
+        "y": 4.458827443714322
+      },
+      "P3": {
+        "x": 6.16960582333278,
+        "y": 4.642106471276628
+      }
+    },
+    {
+      "P0": {
+        "x": 6.16960582333278,
+        "y": 4.642106471276628
+      },
+      "P1": {
+        "x": 6.468397157321327,
+        "y": 4.8253854988389335
+      },
+      "P2": {
+        "x": 6.775473119410616,
+        "y": 5.025735885818699
+      },
+      "P3": {
+        "x": 7.102405193805842,
+        "y": 5.102401624978248
+      }
+    },
+    {
+      "P0": {
+        "x": 7.102405193805842,
+        "y": 5.102401624978248
+      },
+      "P1": {
+        "x": 7.429337268201067,
+        "y": 5.179067364137797
+      },
+      "P2": {
+        "x": 7.795062022762793,
+        "y": 5.163454801562002
+      },
+      "P3": {
+        "x": 8.140174451759023,
+        "y": 5.104205825530508
+      }
+    },
+    {
+      "P0": {
+        "x": 8.140174451759023,
+        "y": 5.104205825530508
+      },
+      "P1": {
+        "x": 8.485286880755254,
+        "y": 5.044956849499014
+      },
+      "P2": {
+        "x": 8.909846838752697,
+        "y": 4.886335188605325
+      },
+      "P3": {
+        "x": 9.296974736198376,
+        "y": 4.7256374539663675
+      }
+    },
+    {
+      "P0": {
+        "x": 9.296974736198376,
+        "y": 4.7256374539663675
+      },
+      "P1": {
+        "x": 9.684102633644054,
+        "y": 4.56493971932741
+      },
+      "P2": {
+        "x": 10.108745827207745,
+        "y": 4.292778978708745
+      },
+      "P3": {
+        "x": 10.687194481653398,
+        "y": 4.046931597595257
+      }
+    },
+    {
+      "P0": {
+        "x": 10.687194481653398,
+        "y": 4.046931597595257
+      },
+      "P1": {
+        "x": 11.265643136099051,
+        "y": 3.8010842164817684
+      },
+      "P2": {
+        "x": 12.70225703392248,
+        "y": 2.8287999999999998
+      },
+      "P3": {
+        "x": 13.76,
+        "y": 2.8287999999999998
+      }
+    }
+  ],
+  "goalEndState": {
+    "velocityMps": 0.0,
+    "rotationDeg": 0.0,
+    "rotationRad": 0.0
+  },
+  "holonomicRotationTargets": [
+    {
+      "waypointIndex": 0,
+      "progress": 0.0,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 1,
+      "progress": 0.23121682106362632,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 2,
+      "progress": 0.3392520176801661,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 3,
+      "progress": 0.4252703063272137,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 4,
+      "progress": 0.4986445786661734,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 5,
+      "progress": 0.5718485066830885,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 6,
+      "progress": 0.6577071237357985,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 7,
+      "progress": 0.7668351420064461,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 8,
+      "progress": 1.0,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    }
+  ]
+}

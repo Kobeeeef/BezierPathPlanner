@@ -2,7 +2,7 @@
   "summary": {
     "plannerMode": "fmm",
     "pathExists": true,
-    "holonomicRotationMode": "tangent_follow",
+    "holonomicRotationMode": "independent_profile",
     "requiredClearanceM": 0.7210407640085653,
     "hardClearanceFeasible": false,
     "rawLengthM": 13.952240099984106,
@@ -882,8 +882,8 @@
       "y": 4.036646982278805,
       "pathTangentHeadingDeg": -9.29752863313133,
       "pathTangentHeadingRad": -0.16227248694658966,
-      "holonomicRotationDeg": -9.29752863313133,
-      "holonomicRotationRad": -0.16227248694658966
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 2,
@@ -892,8 +892,8 @@
       "y": 3.998301027180609,
       "pathTangentHeadingDeg": -17.485141942556478,
       "pathTangentHeadingRad": -0.30517329707616775,
-      "holonomicRotationDeg": -17.485141942556478,
-      "holonomicRotationRad": -0.30517329707616775
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 3,
@@ -902,8 +902,8 @@
       "y": 3.9375317818034934,
       "pathTangentHeadingDeg": -24.435640371325754,
       "pathTangentHeadingRad": -0.4264823793128842,
-      "holonomicRotationDeg": -24.435640371325754,
-      "holonomicRotationRad": -0.4264823793128842
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 4,
@@ -912,8 +912,8 @@
       "y": 3.856908893245542,
       "pathTangentHeadingDeg": -30.20482384672943,
       "pathTangentHeadingRad": -0.5271736261103276,
-      "holonomicRotationDeg": -30.20482384672943,
-      "holonomicRotationRad": -0.5271736261103276
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 5,
@@ -922,8 +922,8 @@
       "y": 3.7590020086048357,
       "pathTangentHeadingDeg": -34.934494070878856,
       "pathTangentHeadingRad": -0.6097219440552734,
-      "holonomicRotationDeg": -34.934494070878856,
-      "holonomicRotationRad": -0.6097219440552734
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 6,
@@ -932,8 +932,8 @@
       "y": 3.646380774979456,
       "pathTangentHeadingDeg": -38.78538844468938,
       "pathTangentHeadingRad": -0.6769327300247923,
-      "holonomicRotationDeg": -38.78538844468938,
-      "holonomicRotationRad": -0.6769327300247923
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 7,
@@ -942,8 +942,8 @@
       "y": 3.5216148394674853,
       "pathTangentHeadingDeg": -41.90389939845927,
       "pathTangentHeadingRad": -0.7313610139275855,
-      "holonomicRotationDeg": -41.90389939845927,
-      "holonomicRotationRad": -0.7313610139275855
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 8,
@@ -952,8 +952,8 @@
       "y": 3.3872738491670065,
       "pathTangentHeadingDeg": -44.41019953216107,
       "pathTangentHeadingRad": -0.7751042033038561,
-      "holonomicRotationDeg": -44.41019953216107,
-      "holonomicRotationRad": -0.7751042033038561
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 9,
@@ -962,8 +962,8 @@
       "y": 3.2459274511761036,
       "pathTangentHeadingDeg": -46.39654692429443,
       "pathTangentHeadingRad": -0.809772505384986,
-      "holonomicRotationDeg": -46.39654692429443,
-      "holonomicRotationRad": -0.809772505384986
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 10,
@@ -972,8 +972,8 @@
       "y": 3.100145292592854,
       "pathTangentHeadingDeg": -47.929165731273685,
       "pathTangentHeadingRad": -0.8365217497447616,
-      "holonomicRotationDeg": -47.929165731273685,
-      "holonomicRotationRad": -0.8365217497447616
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 11,
@@ -982,8 +982,8 @@
       "y": 2.9524970205153434,
       "pathTangentHeadingDeg": -49.050435947921635,
       "pathTangentHeadingRad": -0.8560916068298184,
-      "holonomicRotationDeg": -49.050435947921635,
-      "holonomicRotationRad": -0.8560916068298184
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 12,
@@ -992,8 +992,8 @@
       "y": 2.8055522820416536,
       "pathTangentHeadingDeg": -49.77979822223026,
       "pathTangentHeadingRad": -0.868821379956338,
-      "holonomicRotationDeg": -49.77979822223026,
-      "holonomicRotationRad": -0.868821379956338
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 13,
@@ -1002,8 +1002,8 @@
       "y": 2.6618807242698663,
       "pathTangentHeadingDeg": -50.11230784391587,
       "pathTangentHeadingRad": -0.8746247676493126,
-      "holonomicRotationDeg": -50.11230784391587,
-      "holonomicRotationRad": -0.8746247676493126
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 14,
@@ -1012,8 +1012,8 @@
       "y": 2.524051994298063,
       "pathTangentHeadingDeg": -50.013497009951685,
       "pathTangentHeadingRad": -0.8729001932599961,
-      "holonomicRotationDeg": -50.013497009951685,
-      "holonomicRotationRad": -0.8729001932599961
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 15,
@@ -1022,8 +1022,8 @@
       "y": 2.3946357392243267,
       "pathTangentHeadingDeg": -49.4080540883899,
       "pathTangentHeadingRad": -0.8623332208458493,
-      "holonomicRotationDeg": -49.4080540883899,
-      "holonomicRotationRad": -0.8623332208458493
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 16,
@@ -1032,8 +1032,8 @@
       "y": 2.2762016061467394,
       "pathTangentHeadingDeg": -48.157109514628004,
       "pathTangentHeadingRad": -0.840500119273747,
-      "holonomicRotationDeg": -48.157109514628004,
-      "holonomicRotationRad": -0.840500119273747
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 17,
@@ -1042,8 +1042,8 @@
       "y": 2.171319242163383,
       "pathTangentHeadingDeg": -46.01265444957588,
       "pathTangentHeadingRad": -0.8030723177275182,
-      "holonomicRotationDeg": -46.01265444957588,
-      "holonomicRotationRad": -0.8030723177275182
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 18,
@@ -1052,8 +1052,8 @@
       "y": 2.0825582943723404,
       "pathTangentHeadingDeg": -42.52280843782727,
       "pathTangentHeadingRad": -0.7421630144349124,
-      "holonomicRotationDeg": -42.52280843782727,
-      "holonomicRotationRad": -0.7421630144349124
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 19,
@@ -1062,8 +1062,8 @@
       "y": 2.012488409871693,
       "pathTangentHeadingDeg": -36.82765258042092,
       "pathTangentHeadingRad": -0.6427637933089307,
-      "holonomicRotationDeg": -36.82765258042092,
-      "holonomicRotationRad": -0.6427637933089307
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 20,
@@ -1072,8 +1072,8 @@
       "y": 1.9534821260776176,
       "pathTangentHeadingDeg": -36.159884141928416,
       "pathTangentHeadingRad": -0.6311090354163355,
-      "holonomicRotationDeg": -36.159884141928416,
-      "holonomicRotationRad": -0.6311090354163355
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 21,
@@ -1082,8 +1082,8 @@
       "y": 1.896179132667596,
       "pathTangentHeadingDeg": -35.507662525790785,
       "pathTangentHeadingRad": -0.6197256207620552,
-      "holonomicRotationDeg": -35.507662525790785,
-      "holonomicRotationRad": -0.6197256207620552
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 22,
@@ -1092,8 +1092,8 @@
       "y": 1.8405498051316687,
       "pathTangentHeadingDeg": -34.87122648503916,
       "pathTangentHeadingRad": -0.6086177163725824,
-      "holonomicRotationDeg": -34.87122648503916,
-      "holonomicRotationRad": -0.6086177163725824
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 23,
@@ -1102,8 +1102,8 @@
       "y": 1.7865645189598776,
       "pathTangentHeadingDeg": -34.25082358845245,
       "pathTangentHeadingRad": -0.5977896431382345,
-      "holonomicRotationDeg": -34.25082358845245,
-      "holonomicRotationRad": -0.5977896431382345
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 24,
@@ -1112,8 +1112,8 @@
       "y": 1.7341936496422625,
       "pathTangentHeadingDeg": -33.646713921478344,
       "pathTangentHeadingRad": -0.58724594040641,
-      "holonomicRotationDeg": -33.646713921478344,
-      "holonomicRotationRad": -0.58724594040641
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 25,
@@ -1122,8 +1122,8 @@
       "y": 1.6834075726688635,
       "pathTangentHeadingDeg": -33.0591741543225,
       "pathTangentHeadingRad": -0.5769914369831396,
-      "holonomicRotationDeg": -33.0591741543225,
-      "holonomicRotationRad": -0.5769914369831396
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 26,
@@ -1132,8 +1132,8 @@
       "y": 1.6341766635297217,
       "pathTangentHeadingDeg": -32.488502037324416,
       "pathTangentHeadingRad": -0.5670313295921967,
-      "holonomicRotationDeg": -32.488502037324416,
-      "holonomicRotationRad": -0.5670313295921967
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 27,
@@ -1142,8 +1142,8 @@
       "y": 1.5864712977148785,
       "pathTangentHeadingDeg": -31.935021397194994,
       "pathTangentHeadingRad": -0.5573712700758925,
-      "holonomicRotationDeg": -31.935021397194994,
-      "holonomicRotationRad": -0.5573712700758925
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 28,
@@ -1152,8 +1152,8 @@
       "y": 1.5402618507143742,
       "pathTangentHeadingDeg": -31.399087724004957,
       "pathTangentHeadingRad": -0.5480174629064191,
-      "holonomicRotationDeg": -31.399087724004957,
-      "holonomicRotationRad": -0.5480174629064191
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 29,
@@ -1162,8 +1162,8 @@
       "y": 1.4955186980182482,
       "pathTangentHeadingDeg": -30.881094458726306,
       "pathTangentHeadingRad": -0.5389767749241502,
-      "holonomicRotationDeg": -30.881094458726306,
-      "holonomicRotationRad": -0.5389767749241502
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 30,
@@ -1172,8 +1172,8 @@
       "y": 1.452212215116543,
       "pathTangentHeadingDeg": -30.381480115599764,
       "pathTangentHeadingRad": -0.5302568596464033,
-      "holonomicRotationDeg": -30.381480115599764,
-      "holonomicRotationRad": -0.5302568596464033
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 31,
@@ -1182,8 +1182,8 @@
       "y": 1.4103127774992985,
       "pathTangentHeadingDeg": -29.90073640387476,
       "pathTangentHeadingRad": -0.5218662990185435,
-      "holonomicRotationDeg": -29.90073640387476,
-      "holonomicRotationRad": -0.5218662990185435
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 32,
@@ -1192,8 +1192,8 @@
       "y": 1.3697907606565547,
       "pathTangentHeadingDeg": -29.439417551174255,
       "pathTangentHeadingRad": -0.513814766137397,
-      "holonomicRotationDeg": -29.439417551174255,
-      "holonomicRotationRad": -0.513814766137397
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 33,
@@ -1202,8 +1202,8 @@
       "y": 1.3306165400783534,
       "pathTangentHeadingDeg": -28.998151078012352,
       "pathTangentHeadingRad": -0.5061132133020586,
-      "holonomicRotationDeg": -28.998151078012352,
-      "holonomicRotationRad": -0.5061132133020586
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 34,
@@ -1212,8 +1212,8 @@
       "y": 1.2927604912547346,
       "pathTangentHeadingDeg": -28.5776503326706,
       "pathTangentHeadingRad": -0.4987740907887548,
-      "holonomicRotationDeg": -28.5776503326706,
-      "holonomicRotationRad": -0.4987740907887548
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 35,
@@ -1222,8 +1222,8 @@
       "y": 1.256192989675739,
       "pathTangentHeadingDeg": -28.17872917148646,
       "pathTangentHeadingRad": -0.49181160307021254,
-      "holonomicRotationDeg": -28.17872917148646,
-      "holonomicRotationRad": -0.49181160307021254
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 36,
@@ -1232,8 +1232,8 @@
       "y": 1.2208844108314074,
       "pathTangentHeadingDeg": -27.80231926668456,
       "pathTangentHeadingRad": -0.48524201089430097,
-      "holonomicRotationDeg": -27.80231926668456,
-      "holonomicRotationRad": -0.48524201089430097
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 37,
@@ -1242,8 +1242,8 @@
       "y": 1.1868051302117804,
       "pathTangentHeadingDeg": -27.449490649022664,
       "pathTangentHeadingRad": -0.47908398982084066,
-      "holonomicRotationDeg": -27.449490649022664,
-      "holonomicRotationRad": -0.47908398982084066
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 38,
@@ -1252,8 +1252,8 @@
       "y": 1.1539255233068986,
       "pathTangentHeadingDeg": -27.121476255050396,
       "pathTangentHeadingRad": -0.47335905865209077,
-      "holonomicRotationDeg": -27.121476255050396,
-      "holonomicRotationRad": -0.47335905865209077
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 39,
@@ -1262,8 +1262,8 @@
       "y": 1.12178595631001,
       "pathTangentHeadingDeg": -26.678400137179533,
       "pathTangentHeadingRad": -0.46562592155828975,
-      "holonomicRotationDeg": -26.678400137179533,
-      "holonomicRotationRad": -0.46562592155828975
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 40,
@@ -1272,8 +1272,8 @@
       "y": 1.0899973916622936,
       "pathTangentHeadingDeg": -26.215486755268785,
       "pathTangentHeadingRad": -0.4575465588924052,
-      "holonomicRotationDeg": -26.215486755268785,
-      "holonomicRotationRad": -0.4575465588924052
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 41,
@@ -1282,8 +1282,8 @@
       "y": 1.0586360992256867,
       "pathTangentHeadingDeg": -25.73090106483606,
       "pathTangentHeadingRad": -0.4490889430863042,
-      "holonomicRotationDeg": -25.73090106483606,
-      "holonomicRotationRad": -0.4490889430863042
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 42,
@@ -1292,8 +1292,8 @@
       "y": 1.0277783488621273,
       "pathTangentHeadingDeg": -25.222651235891114,
       "pathTangentHeadingRad": -0.44021831014851687,
-      "holonomicRotationDeg": -25.222651235891114,
-      "holonomicRotationRad": -0.44021831014851687
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 43,
@@ -1302,8 +1302,8 @@
       "y": 0.9975004104335519,
       "pathTangentHeadingDeg": -24.68856449437652,
       "pathTangentHeadingRad": -0.43089673801783934,
-      "holonomicRotationDeg": -24.68856449437652,
-      "holonomicRotationRad": -0.43089673801783934
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 44,
@@ -1312,8 +1312,8 @@
       "y": 0.967878553801898,
       "pathTangentHeadingDeg": -24.126260101161996,
       "pathTangentHeadingRad": -0.42108267495781704,
-      "holonomicRotationDeg": -24.126260101161996,
-      "holonomicRotationRad": -0.42108267495781704
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 45,
@@ -1322,8 +1322,8 @@
       "y": 0.9389890488291033,
       "pathTangentHeadingDeg": -23.533118886139423,
       "pathTangentHeadingRad": -0.4107304078263935,
-      "holonomicRotationDeg": -23.533118886139423,
-      "holonomicRotationRad": -0.4107304078263935
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 46,
@@ -1332,8 +1332,8 @@
       "y": 0.9109081653771053,
       "pathTangentHeadingDeg": -22.90624868256647,
       "pathTangentHeadingRad": -0.3997894587913983,
-      "holonomicRotationDeg": -22.90624868256647,
-      "holonomicRotationRad": -0.3997894587913983
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 47,
@@ -1342,8 +1342,8 @@
       "y": 0.8837121733078414,
       "pathTangentHeadingDeg": -22.242444920251764,
       "pathTangentHeadingRad": -0.38820389755188084,
-      "holonomicRotationDeg": -22.242444920251764,
-      "holonomicRotationRad": -0.38820389755188084
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 48,
@@ -1352,8 +1352,8 @@
       "y": 0.8574773424832483,
       "pathTangentHeadingDeg": -21.538145536511497,
       "pathTangentHeadingRad": -0.37591155438584617,
-      "holonomicRotationDeg": -21.538145536511497,
-      "holonomicRotationRad": -0.37591155438584617
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 49,
@@ -1362,8 +1362,8 @@
       "y": 0.8322799427652638,
       "pathTangentHeadingDeg": -20.789379253443265,
       "pathTangentHeadingRad": -0.36284311741838565,
-      "holonomicRotationDeg": -20.789379253443265,
-      "holonomicRotationRad": -0.36284311741838565
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 50,
@@ -1372,8 +1372,8 @@
       "y": 0.8081962440158256,
       "pathTangentHeadingDeg": -19.991706153797253,
       "pathTangentHeadingRad": -0.3489210954749739,
-      "holonomicRotationDeg": -19.991706153797253,
-      "holonomicRotationRad": -0.3489210954749739
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 51,
@@ -1382,8 +1382,8 @@
       "y": 0.7853025160968706,
       "pathTangentHeadingDeg": -19.140149374596245,
       "pathTangentHeadingRad": -0.334058625910238,
-      "holonomicRotationDeg": -19.140149374596245,
-      "holonomicRotationRad": -0.334058625910238
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 52,
@@ -1392,8 +1392,8 @@
       "y": 0.7636750288703364,
       "pathTangentHeadingDeg": -18.229116643537054,
       "pathTangentHeadingRad": -0.31815810515981907,
-      "holonomicRotationDeg": -18.229116643537054,
-      "holonomicRotationRad": -0.31815810515981907
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 53,
@@ -1402,8 +1402,8 @@
       "y": 0.7433900521981605,
       "pathTangentHeadingDeg": -17.252310334942525,
       "pathTangentHeadingRad": -0.3011096189205928,
-      "holonomicRotationDeg": -17.252310334942525,
-      "holonomicRotationRad": -0.3011096189205928
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 54,
@@ -1412,8 +1412,8 @@
       "y": 0.7245238559422797,
       "pathTangentHeadingDeg": -16.202624763761193,
       "pathTangentHeadingRad": -0.2827891495928012,
-      "holonomicRotationDeg": -16.202624763761193,
-      "holonomicRotationRad": -0.2827891495928012
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 55,
@@ -1422,8 +1422,8 @@
       "y": 0.7071527099646322,
       "pathTangentHeadingDeg": -15.072029638804448,
       "pathTangentHeadingRad": -0.2630565421553093,
-      "holonomicRotationDeg": -15.072029638804448,
-      "holonomicRotationRad": -0.2630565421553093
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 56,
@@ -1432,8 +1432,8 @@
       "y": 0.6913528841271549,
       "pathTangentHeadingDeg": -13.851439072121767,
       "pathTangentHeadingRad": -0.24175321794791313,
-      "holonomicRotationDeg": -13.851439072121767,
-      "holonomicRotationRad": -0.24175321794791313
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 57,
@@ -1442,8 +1442,8 @@
       "y": 0.6772006482917852,
       "pathTangentHeadingDeg": -12.530566464044908,
       "pathTangentHeadingRad": -0.2186996419375673,
-      "holonomicRotationDeg": -12.530566464044908,
-      "holonomicRotationRad": -0.2186996419375673
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 58,
@@ -1452,8 +1452,8 @@
       "y": 0.6644253748633232,
       "pathTangentHeadingDeg": -11.509342056578115,
       "pathTangentHeadingRad": -0.20087591362554358,
-      "holonomicRotationDeg": -11.509342056578115,
-      "holonomicRotationRad": -0.20087591362554358
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 59,
@@ -1462,8 +1462,8 @@
       "y": 0.6527121883105462,
       "pathTangentHeadingDeg": -10.48584935814623,
       "pathTangentHeadingRad": -0.1830125961677858,
-      "holonomicRotationDeg": -10.48584935814623,
-      "holonomicRotationRad": -0.1830125961677858
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 60,
@@ -1472,8 +1472,8 @@
       "y": 0.6420709865913575,
       "pathTangentHeadingDeg": -9.459344786867051,
       "pathTangentHeadingRad": -0.1650967116121913,
-      "holonomicRotationDeg": -9.459344786867051,
-      "holonomicRotationRad": -0.1650967116121913
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 61,
@@ -1482,8 +1482,8 @@
       "y": 0.6325116676636614,
       "pathTangentHeadingDeg": -8.42909229061585,
       "pathTangentHeadingRad": -0.14711541342571732,
-      "holonomicRotationDeg": -8.42909229061585,
-      "holonomicRotationRad": -0.14711541342571732
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 62,
@@ -1492,8 +1492,8 @@
       "y": 0.6240441294853606,
       "pathTangentHeadingDeg": -7.394363541686977,
       "pathTangentHeadingRad": -0.12905598989186673,
-      "holonomicRotationDeg": -7.394363541686977,
-      "holonomicRotationRad": -0.12905598989186673
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 63,
@@ -1502,8 +1502,8 @@
       "y": 0.6166782700143588,
       "pathTangentHeadingDeg": -6.354438231114793,
       "pathTangentHeadingRad": -0.11090586924755752,
-      "holonomicRotationDeg": -6.354438231114793,
-      "holonomicRotationRad": -0.11090586924755752
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 64,
@@ -1512,8 +1512,8 @@
       "y": 0.6104239872085595,
       "pathTangentHeadingDeg": -5.308604475804173,
       "pathTangentHeadingRad": -0.09265262678889047,
-      "holonomicRotationDeg": -5.308604475804173,
-      "holonomicRotationRad": -0.09265262678889047
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 65,
@@ -1522,8 +1522,8 @@
       "y": 0.6052911790258665,
       "pathTangentHeadingDeg": -4.256159351657431,
       "pathTangentHeadingRad": -0.07428399417596936,
-      "holonomicRotationDeg": -4.256159351657431,
-      "holonomicRotationRad": -0.07428399417596936
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 66,
@@ -1532,8 +1532,8 @@
       "y": 0.6012897434241833,
       "pathTangentHeadingDeg": -3.196409565911294,
       "pathTangentHeadingRad": -0.05578787116739478,
-      "holonomicRotationDeg": -3.196409565911294,
-      "holonomicRotationRad": -0.05578787116739478
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 67,
@@ -1542,8 +1542,8 @@
       "y": 0.5984295783614129,
       "pathTangentHeadingDeg": -2.128672281882787,
       "pathTangentHeadingRad": -0.03715234001479547,
-      "holonomicRotationDeg": -2.128672281882787,
-      "holonomicRotationRad": -0.03715234001479547
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 68,
@@ -1552,8 +1552,8 @@
       "y": 0.5967205817954592,
       "pathTangentHeadingDeg": -1.0522761092313866,
       "pathTangentHeadingRad": -0.018365682746163195,
-      "holonomicRotationDeg": -1.0522761092313866,
-      "holonomicRotationRad": -0.018365682746163195
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 69,
@@ -1562,8 +1562,8 @@
       "y": 0.5961726516842255,
       "pathTangentHeadingDeg": 0.03343772736278315,
       "pathTangentHeadingRad": 0.0005835984368647664,
-      "holonomicRotationDeg": 0.03343772736278315,
-      "holonomicRotationRad": 0.0005835984368647664
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 70,
@@ -1572,8 +1572,8 @@
       "y": 0.5967956859856154,
       "pathTangentHeadingDeg": 1.1291140285721846,
       "pathTangentHeadingRad": 0.01970675742904195,
-      "holonomicRotationDeg": 1.1291140285721846,
-      "holonomicRotationRad": 0.01970675742904195
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 71,
@@ -1582,8 +1582,8 @@
       "y": 0.5985995826575325,
       "pathTangentHeadingDeg": 2.235382057889027,
       "pathTangentHeadingRad": 0.03901477695017,
-      "holonomicRotationDeg": 2.235382057889027,
-      "holonomicRotationRad": 0.03901477695017
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 72,
@@ -1592,8 +1592,8 @@
       "y": 0.6015942396578803,
       "pathTangentHeadingDeg": 3.3528537650639554,
       "pathTangentHeadingRad": 0.058518337538254445,
-      "holonomicRotationDeg": 3.3528537650639554,
-      "holonomicRotationRad": 0.058518337538254445
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 73,
@@ -1602,8 +1602,8 @@
       "y": 0.6057895549445621,
       "pathTangentHeadingDeg": 4.482121785545149,
       "pathTangentHeadingRad": 0.07822778263313004,
-      "holonomicRotationDeg": 4.482121785545149,
-      "holonomicRotationRad": 0.07822778263313004
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 74,
@@ -1612,8 +1612,8 @@
       "y": 0.6111954264754815,
       "pathTangentHeadingDeg": 5.623757207473532,
       "pathTangentHeadingRad": 0.09815307960317499,
-      "holonomicRotationDeg": 5.623757207473532,
-      "holonomicRotationRad": 0.09815307960317499
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 75,
@@ -1622,8 +1622,8 @@
       "y": 0.6178217522085422,
       "pathTangentHeadingDeg": 6.778307099753515,
       "pathTangentHeadingRad": 0.11830377660200654,
-      "holonomicRotationDeg": 6.778307099753515,
-      "holonomicRotationRad": 0.11830377660200654
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 76,
@@ -1632,8 +1632,8 @@
       "y": 0.6256784301016475,
       "pathTangentHeadingDeg": 7.946291797181134,
       "pathTangentHeadingRad": 0.13868895518502825,
-      "holonomicRotationDeg": 7.946291797181134,
-      "holonomicRotationRad": 0.13868895518502825
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 77,
@@ -1642,8 +1642,8 @@
       "y": 0.6349416872893259,
       "pathTangentHeadingDeg": 9.226033240572086,
       "pathTangentHeadingRad": 0.16102465694642498,
-      "holonomicRotationDeg": 9.226033240572086,
-      "holonomicRotationRad": 0.16102465694642498
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 78,
@@ -1652,8 +1652,8 @@
       "y": 0.6457454456178842,
       "pathTangentHeadingDeg": 10.421289614706117,
       "pathTangentHeadingRad": 0.18188581608051302,
-      "holonomicRotationDeg": 10.421289614706117,
-      "holonomicRotationRad": 0.18188581608051302
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 79,
@@ -1662,8 +1662,8 @@
       "y": 0.6580361451128941,
       "pathTangentHeadingDeg": 11.541955127361748,
       "pathTangentHeadingRad": 0.20144511908990395,
-      "holonomicRotationDeg": 11.541955127361748,
-      "holonomicRotationRad": 0.20144511908990395
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 80,
@@ -1672,8 +1672,8 @@
       "y": 0.6717602257999274,
       "pathTangentHeadingDeg": 12.596742481898378,
       "pathTangentHeadingRad": 0.2198546313349689,
-      "holonomicRotationDeg": 12.596742481898378,
-      "holonomicRotationRad": 0.2198546313349689
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 81,
@@ -1682,8 +1682,8 @@
       "y": 0.6868641277045555,
       "pathTangentHeadingDeg": 13.593354971709058,
       "pathTangentHeadingRad": 0.23724880064866372,
-      "holonomicRotationDeg": 13.593354971709058,
-      "holonomicRotationRad": 0.23724880064866372
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 82,
@@ -1692,8 +1692,8 @@
       "y": 0.7032942908523496,
       "pathTangentHeadingDeg": 14.538635291904475,
       "pathTangentHeadingRad": 0.25374705459038,
-      "holonomicRotationDeg": 14.538635291904475,
-      "holonomicRotationRad": 0.25374705459038
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 83,
@@ -1702,8 +1702,8 @@
       "y": 0.7209971552688818,
       "pathTangentHeadingDeg": 15.438693905013508,
       "pathTangentHeadingRad": 0.2694560408500664,
-      "holonomicRotationDeg": 15.438693905013508,
-      "holonomicRotationRad": 0.2694560408500664
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 84,
@@ -1712,8 +1712,8 @@
       "y": 0.7399191609797234,
       "pathTangentHeadingDeg": 16.299019791576804,
       "pathTangentHeadingRad": 0.28447156021073516,
-      "holonomicRotationDeg": 16.299019791576804,
-      "holonomicRotationRad": 0.28447156021073516
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 85,
@@ -1722,8 +1722,8 @@
       "y": 0.7600067480104462,
       "pathTangentHeadingDeg": 17.124576238914123,
       "pathTangentHeadingRad": 0.29888023837783856,
-      "holonomicRotationDeg": 17.124576238914123,
-      "holonomicRotationRad": 0.29888023837783856
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 86,
@@ -1732,8 +1732,8 @@
       "y": 0.7812063563866211,
       "pathTangentHeadingDeg": 17.919884071403207,
       "pathTangentHeadingRad": 0.31276097862167257,
-      "holonomicRotationDeg": 17.919884071403207,
-      "holonomicRotationRad": 0.31276097862167257
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 87,
@@ -1742,8 +1742,8 @@
       "y": 0.8034644261338204,
       "pathTangentHeadingDeg": 18.68909445944907,
       "pathTangentHeadingRad": 0.3261862325336161,
-      "holonomicRotationDeg": 18.68909445944907,
-      "holonomicRotationRad": 0.3261862325336161
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 88,
@@ -1752,8 +1752,8 @@
       "y": 0.8267273972776155,
       "pathTangentHeadingDeg": 19.436053192326586,
       "pathTangentHeadingRad": 0.3392231217988536,
-      "holonomicRotationDeg": 19.436053192326586,
-      "holonomicRotationRad": 0.3392231217988536
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 89,
@@ -1762,8 +1762,8 @@
       "y": 0.8509417098435773,
       "pathTangentHeadingDeg": 20.164358077659973,
       "pathTangentHeadingRad": 0.35193444000628094,
-      "holonomicRotationDeg": 20.164358077659973,
-      "holonomicRotationRad": 0.35193444000628094
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 90,
@@ -1772,8 +1772,8 @@
       "y": 0.8760538038572783,
       "pathTangentHeadingDeg": 20.87741094450636,
       "pathTangentHeadingRad": 0.36437956027353513,
-      "holonomicRotationDeg": 20.87741094450636,
-      "holonomicRotationRad": 0.36437956027353513
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 91,
@@ -1782,8 +1782,8 @@
       "y": 0.9020101193442894,
       "pathTangentHeadingDeg": 21.57846558053269,
       "pathTangentHeadingRad": 0.37661527190856503,
-      "holonomicRotationDeg": 21.57846558053269,
-      "holonomicRotationRad": 0.37661527190856503
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 92,
@@ -1792,8 +1792,8 @@
       "y": 0.9287570963301823,
       "pathTangentHeadingDeg": 22.27067282741153,
       "pathTangentHeadingRad": 0.38869656747276604,
-      "holonomicRotationDeg": 22.27067282741153,
-      "holonomicRotationRad": 0.38869656747276604
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 93,
@@ -1802,8 +1802,8 @@
       "y": 0.9562411748405288,
       "pathTangentHeadingDeg": 22.957123992726693,
       "pathTangentHeadingRad": 0.40067740046166755,
-      "holonomicRotationDeg": 22.957123992726693,
-      "holonomicRotationRad": 0.40067740046166755
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 94,
@@ -1812,8 +1812,8 @@
       "y": 0.9844087949009003,
       "pathTangentHeadingDeg": 23.640893712405653,
       "pathTangentHeadingRad": 0.41261143339550405,
-      "holonomicRotationDeg": 23.640893712405653,
-      "holonomicRotationRad": 0.41261143339550405
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 95,
@@ -1822,8 +1822,8 @@
       "y": 1.0132063965368683,
       "pathTangentHeadingDeg": 24.32508341736365,
       "pathTangentHeadingRad": 0.4245527964552697,
-      "holonomicRotationDeg": 24.32508341736365,
-      "holonomicRotationRad": 0.4245527964552697
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 96,
@@ -1832,8 +1832,8 @@
       "y": 1.0426521243794284,
       "pathTangentHeadingDeg": 24.221879752293283,
       "pathTangentHeadingRad": 0.4227515526996663,
-      "holonomicRotationDeg": 24.221879752293283,
-      "holonomicRotationRad": 0.4227515526996663
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 97,
@@ -1842,8 +1842,8 @@
       "y": 1.072883667548931,
       "pathTangentHeadingDeg": 24.258216884707327,
       "pathTangentHeadingRad": 0.4233857553010245,
-      "holonomicRotationDeg": 24.258216884707327,
-      "holonomicRotationRad": 0.4233857553010245
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 98,
@@ -1852,8 +1852,8 @@
       "y": 1.104026782804981,
       "pathTangentHeadingDeg": 24.42346942219712,
       "pathTangentHeadingRad": 0.42626995617749674,
-      "holonomicRotationDeg": 24.42346942219712,
-      "holonomicRotationRad": 0.42626995617749674
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 99,
@@ -1862,8 +1862,8 @@
       "y": 1.1362072269071832,
       "pathTangentHeadingDeg": 24.70885160905693,
       "pathTangentHeadingRad": 0.43125081496474216,
-      "holonomicRotationDeg": 24.70885160905693,
-      "holonomicRotationRad": 0.43125081496474216
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 100,
@@ -1872,8 +1872,8 @@
       "y": 1.1695507566151415,
       "pathTangentHeadingDeg": 25.107090724982363,
       "pathTangentHeadingRad": 0.43820139874787234,
-      "holonomicRotationDeg": 25.107090724982363,
-      "holonomicRotationRad": 0.43820139874787234
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 101,
@@ -1882,8 +1882,8 @@
       "y": 1.2041831286884606,
       "pathTangentHeadingDeg": 25.61215530217335,
       "pathTangentHeadingRad": 0.44701643855504813,
-      "holonomicRotationDeg": 25.61215530217335,
-      "holonomicRotationRad": 0.44701643855504813
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 102,
@@ -1892,8 +1892,8 @@
       "y": 1.2402300998867446,
       "pathTangentHeadingDeg": 26.21902691849596,
       "pathTangentHeadingRad": 0.45760834639677744,
-      "holonomicRotationDeg": 26.21902691849596,
-      "holonomicRotationRad": 0.45760834639677744
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 103,
@@ -1902,8 +1902,8 @@
       "y": 1.277817426969599,
       "pathTangentHeadingDeg": 26.92350629794287,
       "pathTangentHeadingRad": 0.46990383108053246,
-      "holonomicRotationDeg": 26.92350629794287,
-      "holonomicRotationRad": 0.46990383108053246
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 104,
@@ -1912,8 +1912,8 @@
       "y": 1.317070866696628,
       "pathTangentHeadingDeg": 27.72204619802356,
       "pathTangentHeadingRad": 0.48384098154548705,
-      "holonomicRotationDeg": 27.72204619802356,
-      "holonomicRotationRad": 0.48384098154548705
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 105,
@@ -1922,8 +1922,8 @@
       "y": 1.3581161758274352,
       "pathTangentHeadingDeg": 28.611605064937628,
       "pathTangentHeadingRad": 0.49936671266344757,
-      "holonomicRotationDeg": 28.611605064937628,
-      "holonomicRotationRad": 0.49936671266344757
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 106,
@@ -1932,8 +1932,8 @@
       "y": 1.4010791111216259,
       "pathTangentHeadingDeg": 29.589516715062576,
       "pathTangentHeadingRad": 0.5164344907517388,
-      "holonomicRotationDeg": 29.589516715062576,
-      "holonomicRotationRad": 0.5164344907517388
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 107,
@@ -1942,8 +1942,8 @@
       "y": 1.4460854293388044,
       "pathTangentHeadingDeg": 30.653372395640794,
       "pathTangentHeadingRad": 0.5350022751438738,
-      "holonomicRotationDeg": 30.653372395640794,
-      "holonomicRotationRad": 0.5350022751438738
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 108,
@@ -1952,8 +1952,8 @@
       "y": 1.4932608872385753,
       "pathTangentHeadingDeg": 31.80091253088999,
       "pathTangentHeadingRad": 0.5550306288027532,
-      "holonomicRotationDeg": 31.80091253088999,
-      "holonomicRotationRad": 0.5550306288027532
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 109,
@@ -1962,8 +1962,8 @@
       "y": 1.5427312415805434,
       "pathTangentHeadingDeg": 33.02992630926202,
       "pathTangentHeadingRad": 0.576480965787721,
-      "holonomicRotationDeg": 33.02992630926202,
-      "holonomicRotationRad": 0.576480965787721
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 110,
@@ -1972,8 +1972,8 @@
       "y": 1.5946222491243127,
       "pathTangentHeadingDeg": 34.338158041545434,
       "pathTangentHeadingRad": 0.5993139168951357,
-      "holonomicRotationDeg": 34.338158041545434,
-      "holonomicRotationRad": 0.5993139168951357
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 111,
@@ -1982,8 +1982,8 @@
       "y": 1.6490596666294879,
       "pathTangentHeadingDeg": 35.72321993526648,
       "pathTangentHeadingRad": 0.6234878072844756,
-      "holonomicRotationDeg": 35.72321993526648,
-      "holonomicRotationRad": 0.6234878072844756
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 112,
@@ -1992,8 +1992,8 @@
       "y": 1.7061692508556732,
       "pathTangentHeadingDeg": 37.18251159341969,
       "pathTangentHeadingRad": 0.6489572514661367,
-      "holonomicRotationDeg": 37.18251159341969,
-      "holonomicRotationRad": 0.6489572514661367
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 113,
@@ -2002,8 +2002,8 @@
       "y": 1.766076758562474,
       "pathTangentHeadingDeg": 38.713147147027776,
       "pathTangentHeadingRad": 0.675671881524684,
-      "holonomicRotationDeg": 38.713147147027776,
-      "holonomicRotationRad": 0.675671881524684
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 114,
@@ -2012,8 +2012,8 @@
       "y": 1.828907946509494,
       "pathTangentHeadingDeg": 40.31189145074426,
       "pathTangentHeadingRad": 0.7035752335220409,
-      "holonomicRotationDeg": 40.31189145074426,
-      "holonomicRotationRad": 0.7035752335220409
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 115,
@@ -2022,8 +2022,8 @@
       "y": 1.9044591925503074,
       "pathTangentHeadingDeg": 47.391155027933856,
       "pathTangentHeadingRad": 0.827131691560511,
-      "holonomicRotationDeg": 47.391155027933856,
-      "holonomicRotationRad": 0.827131691560511
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 116,
@@ -2032,8 +2032,8 @@
       "y": 2.00056531684791,
       "pathTangentHeadingDeg": 51.78931786389282,
       "pathTangentHeadingRad": 0.9038941140868462,
-      "holonomicRotationDeg": 51.78931786389282,
-      "holonomicRotationRad": 0.9038941140868462
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 117,
@@ -2042,8 +2042,8 @@
       "y": 2.1144097396260433,
       "pathTangentHeadingDeg": 54.5453107283103,
       "pathTangentHeadingRad": 0.9519952637324008,
-      "holonomicRotationDeg": 54.5453107283103,
-      "holonomicRotationRad": 0.9519952637324008
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 118,
@@ -2052,8 +2052,8 @@
       "y": 2.2431758811084466,
       "pathTangentHeadingDeg": 56.21934401059074,
       "pathTangentHeadingRad": 0.9812126562961623,
-      "holonomicRotationDeg": 56.21934401059074,
-      "holonomicRotationRad": 0.9812126562961623
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 119,
@@ -2062,8 +2062,8 @@
       "y": 2.3840471615188608,
       "pathTangentHeadingDeg": 57.12121307700349,
       "pathTangentHeadingRad": 0.9969532409269521,
-      "holonomicRotationDeg": 57.12121307700349,
-      "holonomicRotationRad": 0.9969532409269521
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 120,
@@ -2072,8 +2072,8 @@
       "y": 2.5342070010810236,
       "pathTangentHeadingDeg": 57.42470020131416,
       "pathTangentHeadingRad": 1.0022500904835827,
-      "holonomicRotationDeg": 57.42470020131416,
-      "holonomicRotationRad": 1.0022500904835827
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 121,
@@ -2082,8 +2082,8 @@
       "y": 2.6908388200186755,
       "pathTangentHeadingDeg": 57.224113942516134,
       "pathTangentHeadingRad": 0.9987491998332997,
-      "holonomicRotationDeg": 57.224113942516134,
-      "holonomicRotationRad": 0.9987491998332997
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 122,
@@ -2092,8 +2092,8 @@
       "y": 2.8511260385555572,
       "pathTangentHeadingDeg": 56.562613712695494,
       "pathTangentHeadingRad": 0.9872038428202303,
-      "holonomicRotationDeg": 56.562613712695494,
-      "holonomicRotationRad": 0.9872038428202303
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 123,
@@ -2102,8 +2102,8 @@
       "y": 3.0122520769154093,
       "pathTangentHeadingDeg": 55.44614927360989,
       "pathTangentHeadingRad": 0.9677178623767548,
-      "holonomicRotationDeg": 55.44614927360989,
-      "holonomicRotationRad": 0.9677178623767548
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 124,
@@ -2112,8 +2112,8 @@
       "y": 3.1714003553219694,
       "pathTangentHeadingDeg": 53.849438457535854,
       "pathTangentHeadingRad": 0.9398500014340573,
-      "holonomicRotationDeg": 53.849438457535854,
-      "holonomicRotationRad": 0.9398500014340573
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 125,
@@ -2122,8 +2122,8 @@
       "y": 3.3257542939989784,
       "pathTangentHeadingDeg": 51.7170553564176,
       "pathTangentHeadingRad": 0.9026328954056567,
-      "holonomicRotationDeg": 51.7170553564176,
-      "holonomicRotationRad": 0.9026328954056567
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 126,
@@ -2132,8 +2132,8 @@
       "y": 3.472497313170177,
       "pathTangentHeadingDeg": 48.961302043034756,
       "pathTangentHeadingRad": 0.8545359267143829,
-      "holonomicRotationDeg": 48.961302043034756,
-      "holonomicRotationRad": 0.8545359267143829
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 127,
@@ -2142,8 +2142,8 @@
       "y": 3.6088128330593037,
       "pathTangentHeadingDeg": 45.45838852394006,
       "pathTangentHeadingRad": 0.7933985523935592,
-      "holonomicRotationDeg": 45.45838852394006,
-      "holonomicRotationRad": 0.7933985523935592
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 128,
@@ -2152,8 +2152,8 @@
       "y": 3.731884273890099,
       "pathTangentHeadingDeg": 41.04573459676411,
       "pathTangentHeadingRad": 0.7163832126132809,
-      "holonomicRotationDeg": 41.04573459676411,
-      "holonomicRotationRad": 0.7163832126132809
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 129,
@@ -2162,8 +2162,8 @@
       "y": 3.838895055886303,
       "pathTangentHeadingDeg": 35.52687447052398,
       "pathTangentHeadingRad": 0.6200609324533606,
-      "holonomicRotationDeg": 35.52687447052398,
-      "holonomicRotationRad": 0.6200609324533606
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 130,
@@ -2172,8 +2172,8 @@
       "y": 3.927028599271655,
       "pathTangentHeadingDeg": 28.69757760966261,
       "pathTangentHeadingRad": 0.5008672166352166,
-      "holonomicRotationDeg": 28.69757760966261,
-      "holonomicRotationRad": 0.5008672166352166
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 131,
@@ -2182,8 +2182,8 @@
       "y": 3.9934683242698954,
       "pathTangentHeadingDeg": 20.414971218102394,
       "pathTangentHeadingRad": 0.3563084644557642,
-      "holonomicRotationDeg": 20.414971218102394,
-      "holonomicRotationRad": 0.3563084644557642
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 132,
@@ -2192,8 +2192,8 @@
       "y": 4.035397651104764,
       "pathTangentHeadingDeg": 10.72426038799865,
       "pathTangentHeadingRad": 0.187173653611781,
-      "holonomicRotationDeg": 10.72426038799865,
-      "holonomicRotationRad": 0.187173653611781
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
     },
     {
       "idx": 133,
@@ -2237,9 +2237,9 @@
         "y": 1.6333256523275734
       },
       "pathTangentHeadingDeg": -36.82765258042092,
-      "holonomicRotationDeg": -36.82765258042092,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": -0.6427637933089307,
-      "holonomicRotationRad": -0.6427637933089307,
+      "holonomicRotationRad": 0.0,
       "progress": 0.24023137833729266
     },
     {
@@ -2256,9 +2256,9 @@
         "y": 0.9494244390405377
       },
       "pathTangentHeadingDeg": -27.121476255050396,
-      "holonomicRotationDeg": -27.121476255050396,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": -0.47335905865209077,
-      "holonomicRotationRad": -0.47335905865209077,
+      "holonomicRotationRad": 0.0,
       "progress": 0.3626730418082464
     },
     {
@@ -2275,9 +2275,9 @@
         "y": 0.5929482038274302
       },
       "pathTangentHeadingDeg": -12.530566464044908,
-      "holonomicRotationDeg": -12.530566464044908,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": -0.2186996419375673,
-      "holonomicRotationRad": -0.2186996419375673,
+      "holonomicRotationRad": 0.0,
       "progress": 0.46052016566924264
     },
     {
@@ -2294,9 +2294,9 @@
         "y": 0.6793544009536963
       },
       "pathTangentHeadingDeg": 7.946291797181134,
-      "holonomicRotationDeg": 7.946291797181134,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": 0.13868895518502825,
-      "holonomicRotationRad": 0.13868895518502825,
+      "holonomicRotationRad": 0.0,
       "progress": 0.54755136935954
     },
     {
@@ -2313,9 +2313,9 @@
         "y": 1.1974730774969278
       },
       "pathTangentHeadingDeg": 24.32508341736365,
-      "holonomicRotationDeg": 24.32508341736365,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": 0.4245527964552697,
-      "holonomicRotationRad": 0.4245527964552697,
+      "holonomicRotationRad": 0.0,
       "progress": 0.6453352321079032
     },
     {
@@ -2332,9 +2332,9 @@
         "y": 2.23636261076048
       },
       "pathTangentHeadingDeg": 40.31189145074426,
-      "holonomicRotationDeg": 40.31189145074426,
+      "holonomicRotationDeg": 0.0,
       "pathTangentHeadingRad": 0.7035752335220409,
-      "holonomicRotationRad": 0.7035752335220409,
+      "holonomicRotationRad": 0.0,
       "progress": 0.7676995873091658
     },
     {
@@ -2745,7 +2745,7 @@
     "allow_terminal_overshoot": false,
     "start_heading_deg": 0.0,
     "end_heading_deg": 0.0,
-    "holonomic_rotation_mode": "tangent_follow",
+    "holonomic_rotation_mode": "independent_profile",
     "rotation_finish_progress": 0.8,
     "object_width_m": 0.85,
     "object_height_m": 0.85,

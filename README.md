@@ -42,6 +42,7 @@ Outputs are written to `outputs/`.
 - `uniform_high`: map is high heat everywhere but finite (path should still exist).
 - `blocked_gap`: optional blocked wall with a single traversable gap.
 - `double_hot_mid_corridor`: start at mid-left and goal at mid-right with two large hot circles and a clear middle corridor.
+- `small_islands_weave`: many small hot islands that force repeated up/down turns, then a final rise into the goal.
 
 ## Key CLI Flags
 
