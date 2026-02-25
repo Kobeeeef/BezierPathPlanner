@@ -1,0 +1,126 @@
+{
+  "version": "best-effort-2026-02",
+  "pathType": "bezier",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 0.6000000000000001,
+        "y": 2.8000000000000003
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.5826743447784293,
+        "y": 2.9381058726557865
+      },
+      "pathTangentHeadingDeg": 8.000000000000009,
+      "holonomicRotationDeg": 8.00000000000001,
+      "pathTangentHeadingRad": 0.13962634015954653,
+      "holonomicRotationRad": 0.13962634015954656,
+      "progress": 0.0
+    },
+    {
+      "anchor": {
+        "x": 3.608876543667203,
+        "y": 3.5699193830491693
+      },
+      "prevControl": {
+        "x": 3.0813552383695733,
+        "y": 3.435887271744242
+      },
+      "nextControl": {
+        "x": 4.136397848964832,
+        "y": 3.7039514943540968
+      },
+      "pathTangentHeadingDeg": 14.255995958548981,
+      "holonomicRotationDeg": 4.787370866023173,
+      "pathTangentHeadingRad": 0.24881406762768477,
+      "holonomicRotationRad": 0.0835553841261567,
+      "progress": 0.28601155890943547
+    },
+    {
+      "anchor": {
+        "x": 5.195168413058928,
+        "y": 3.9675360180125945
+      },
+      "prevControl": {
+        "x": 4.747997632583064,
+        "y": 3.858172078235398
+      },
+      "nextControl": {
+        "x": 5.642339193534792,
+        "y": 4.076899957789791
+      },
+      "pathTangentHeadingDeg": 13.742981581746498,
+      "holonomicRotationDeg": 1.7470144277989987,
+      "pathTangentHeadingRad": 0.23986027764241463,
+      "holonomicRotationRad": 0.03049115384493728,
+      "progress": 0.43661062178347987
+    },
+    {
+      "anchor": {
+        "x": 6.540948019383223,
+        "y": 4.287012051651988
+      },
+      "prevControl": {
+        "x": 6.092003835282667,
+        "y": 4.1851724827346475
+      },
+      "nextControl": {
+        "x": 6.989892203483779,
+        "y": 4.388851620569329
+      },
+      "pathTangentHeadingDeg": 12.780818065946791,
+      "holonomicRotationDeg": -0.6927305261264025,
+      "pathTangentHeadingRad": 0.22306735634914526,
+      "holonomicRotationRad": -0.012090428509978324,
+      "progress": 0.5639862034787263
+    },
+    {
+      "anchor": {
+        "x": 8.138772530104536,
+        "y": 4.6352701929052325
+      },
+      "prevControl": {
+        "x": 7.60299553687296,
+        "y": 4.53947907912913
+      },
+      "nextControl": {
+        "x": 8.674549523336111,
+        "y": 4.731061306681335
+      },
+      "pathTangentHeadingDeg": 10.13676028550871,
+      "holonomicRotationDeg": -2.6505721812966905,
+      "pathTangentHeadingRad": 0.17691984246752743,
+      "holonomicRotationRad": -0.046261211625395315,
+      "progress": 0.7145826201875055
+    },
+    {
+      "anchor": {
+        "x": 11.200000000000001,
+        "y": 5.120000000000001
+      },
+      "prevControl": {
+        "x": 10.2110870172029,
+        "y": 5.171826733332566
+      },
+      "nextControl": null,
+      "pathTangentHeadingDeg": -3.0000000000000107,
+      "holonomicRotationDeg": -3.0000000000000004,
+      "pathTangentHeadingRad": -0.05235987755983007,
+      "holonomicRotationRad": -0.05235987755982989,
+      "progress": 1.0
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.8
+  },
+  "goalEndState": {
+    "velocity": 0.0,
+    "rotation": -3.0
+  },
+  "reversed": false,
+  "metadata": {
+    "warning": "Best-effort adapter. Validate against your installed PathPlanner version."
+  }
+}

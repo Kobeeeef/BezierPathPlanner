@@ -1,0 +1,269 @@
+{
+  "format": "PathPlanner-concept",
+  "notes": [
+    "Heat is high-cost traversable terrain.",
+    "Blocked cells are explicitly infinite/untraversable.",
+    "Path tangent heading is geometric path direction, not robot-facing heading."
+  ],
+  "approachConstraints": {
+    "startApproachHeadingDeg": 0.0,
+    "goalApproachHeadingDeg": 0.0,
+    "startApproachLockDistanceM": 0.5,
+    "goalApproachLockDistanceM": 0.5
+  },
+  "clearanceModel": {
+    "objectShape": "rectangle",
+    "objectWidthM": 0.85,
+    "objectHeightM": 0.85,
+    "footprintRadiusM": 0.6010407640085653,
+    "safeSpaceM": 0.12,
+    "requiredClearanceM": 0.7210407640085653
+  },
+  "holonomicRotationMode": "independent_profile",
+  "rotationFinishProgress": 0.8,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 0.8099999999999999,
+        "y": 4.05
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.8050940661297943,
+        "y": 4.05
+      },
+      "pathTangentHeadingDeg": 0.0,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": 0.0,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.0
+    },
+    {
+      "anchor": {
+        "x": 3.9188432362263654,
+        "y": 4.2370492471227506
+      },
+      "prevControl": {
+        "x": 3.373392487747233,
+        "y": 4.214325274570603
+      },
+      "nextControl": {
+        "x": 4.464293984705498,
+        "y": 4.259773219674898
+      },
+      "pathTangentHeadingDeg": 2.385614560600474,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": 0.041636828765996066,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.2857523591305801
+    },
+    {
+      "anchor": {
+        "x": 5.5591054032172655,
+        "y": 4.247852035460342
+      },
+      "prevControl": {
+        "x": 5.097359099270626,
+        "y": 4.249392998330551
+      },
+      "nextControl": {
+        "x": 6.020851707163905,
+        "y": 4.246311072590133
+      },
+      "pathTangentHeadingDeg": -0.19120963248756145,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": -0.003337237648436263,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.4362497684359721
+    },
+    {
+      "anchor": {
+        "x": 6.946331073319449,
+        "y": 4.226945763224571
+      },
+      "prevControl": {
+        "x": 6.484704830570412,
+        "y": 4.237586993433391
+      },
+      "nextControl": {
+        "x": 7.407957316068486,
+        "y": 4.216304533015752
+      },
+      "pathTangentHeadingDeg": -1.3205263580848996,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": -0.02304753280795114,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.563542254158689
+    },
+    {
+      "anchor": {
+        "x": 8.585940111847405,
+        "y": 4.178078608484505
+      },
+      "prevControl": {
+        "x": 8.040380937756664,
+        "y": 4.198385951282789
+      },
+      "nextControl": {
+        "x": 9.131499285938146,
+        "y": 4.157771265686221
+      },
+      "pathTangentHeadingDeg": -2.1317359557314566,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": -0.037205811210662,
+      "holonomicRotationRad": 0.0,
+      "progress": 0.7140432746218297
+    },
+    {
+      "anchor": {
+        "x": 11.7,
+        "y": 4.049999999999999
+      },
+      "prevControl": {
+        "x": 10.704194255965207,
+        "y": 4.049999999999999
+      },
+      "nextControl": null,
+      "pathTangentHeadingDeg": 0.0,
+      "holonomicRotationDeg": 0.0,
+      "pathTangentHeadingRad": 0.0,
+      "holonomicRotationRad": 0.0,
+      "progress": 1.0
+    }
+  ],
+  "bezierSegments": [
+    {
+      "P0": {
+        "x": 0.8099999999999999,
+        "y": 4.05
+      },
+      "P1": {
+        "x": 1.8050940661297943,
+        "y": 4.05
+      },
+      "P2": {
+        "x": 3.373392487747233,
+        "y": 4.214325274570603
+      },
+      "P3": {
+        "x": 3.9188432362263654,
+        "y": 4.2370492471227506
+      }
+    },
+    {
+      "P0": {
+        "x": 3.9188432362263654,
+        "y": 4.2370492471227506
+      },
+      "P1": {
+        "x": 4.464293984705498,
+        "y": 4.259773219674898
+      },
+      "P2": {
+        "x": 5.097359099270626,
+        "y": 4.249392998330551
+      },
+      "P3": {
+        "x": 5.5591054032172655,
+        "y": 4.247852035460342
+      }
+    },
+    {
+      "P0": {
+        "x": 5.5591054032172655,
+        "y": 4.247852035460342
+      },
+      "P1": {
+        "x": 6.020851707163905,
+        "y": 4.246311072590133
+      },
+      "P2": {
+        "x": 6.484704830570412,
+        "y": 4.237586993433391
+      },
+      "P3": {
+        "x": 6.946331073319449,
+        "y": 4.226945763224571
+      }
+    },
+    {
+      "P0": {
+        "x": 6.946331073319449,
+        "y": 4.226945763224571
+      },
+      "P1": {
+        "x": 7.407957316068486,
+        "y": 4.216304533015752
+      },
+      "P2": {
+        "x": 8.040380937756664,
+        "y": 4.198385951282789
+      },
+      "P3": {
+        "x": 8.585940111847405,
+        "y": 4.178078608484505
+      }
+    },
+    {
+      "P0": {
+        "x": 8.585940111847405,
+        "y": 4.178078608484505
+      },
+      "P1": {
+        "x": 9.131499285938146,
+        "y": 4.157771265686221
+      },
+      "P2": {
+        "x": 10.704194255965207,
+        "y": 4.049999999999999
+      },
+      "P3": {
+        "x": 11.7,
+        "y": 4.049999999999999
+      }
+    }
+  ],
+  "goalEndState": {
+    "velocityMps": 0.0,
+    "rotationDeg": 0.0,
+    "rotationRad": 0.0
+  },
+  "holonomicRotationTargets": [
+    {
+      "waypointIndex": 0,
+      "progress": 0.0,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 1,
+      "progress": 0.2857523591305801,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 2,
+      "progress": 0.4362497684359721,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 3,
+      "progress": 0.563542254158689,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 4,
+      "progress": 0.7140432746218297,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    },
+    {
+      "waypointIndex": 5,
+      "progress": 1.0,
+      "holonomicRotationDeg": 0.0,
+      "holonomicRotationRad": 0.0
+    }
+  ]
+}

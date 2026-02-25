@@ -1,0 +1,39 @@
+[
+  {
+    "scenario": "double_hot_mid_corridor",
+    "description": "Start mid-left to mid-right with two large hot circles and a clear middle corridor between them.",
+    "summary": {
+      "plannerMode": "fmm",
+      "pathExists": true,
+      "holonomicRotationMode": "independent_profile",
+      "requiredClearanceM": 0.7210407640085653,
+      "hardClearanceFeasible": false,
+      "rawLengthM": 14.102857548840156,
+      "smoothedLengthM": 14.148119761571797,
+      "rawIntegratedCost": 232.7538738007765,
+      "smoothedIntegratedCost": 234.84319392920503,
+      "rawObjectiveIntegratedCost": 234.2636066778479,
+      "smoothedObjectiveIntegratedCost": 236.30032377746926,
+      "minWallClearanceM": 0.48,
+      "minHeatRegionClearanceM": 1.5667807392084594,
+      "startEndpointAlignmentErrorDeg": 2.9892611081540204,
+      "endEndpointAlignmentErrorDeg": 3.0434784103996173,
+      "startCostToGo": 235.93146604431982,
+      "bezierSegmentCount": 8,
+      "smoothingAcceptedAttempt": 1,
+      "smoothingAttemptCount": 6
+    },
+    "files": {
+      "pathplanner_concept_json": "outputs\\double_hot_mid_corridor\\pathplanner_concept.json",
+      "best_effort_path_json": "outputs\\double_hot_mid_corridor\\pathplanner_best_effort.path.json",
+      "waypoints_csv": "outputs\\double_hot_mid_corridor\\pathplanner_waypoints.csv",
+      "plan_summary_json": "outputs\\double_hot_mid_corridor\\plan_summary.json",
+      "heatmap": "outputs\\double_hot_mid_corridor\\heatmap.png",
+      "cost_to_go": "outputs\\double_hot_mid_corridor\\cost_to_go.png",
+      "path_overlay": "outputs\\double_hot_mid_corridor\\path_overlay.png",
+      "curvature_overlay": "outputs\\double_hot_mid_corridor\\curvature_overlay.png",
+      "speed_overlay": "outputs\\double_hot_mid_corridor\\speed_overlay.png",
+      "animation_gif": "outputs\\double_hot_mid_corridor\\path_animation.gif"
+    }
+  }
+]
