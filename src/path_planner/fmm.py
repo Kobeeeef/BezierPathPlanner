@@ -3,8 +3,22 @@ from __future__ import annotations
 import heapq
 import itertools
 import math
+from dataclasses import dataclass
 
 import numpy as np
+
+
+@dataclass
+class FmmWorkspace:
+    t_field: np.ndarray | None = None
+    accepted: np.ndarray | None = None
+
+    def ensure_shape(self, shape: tuple[int, int]) -> tuple[np.ndarray, np.ndarray]:
+        if self.t_field is None or self.t_field.shape != shape:
+            self.t_field = np.empty(shape, dtype=float)
+        if self.accepted is None or self.accepted.shape != shape:
+            self.accepted = np.empty(shape, dtype=bool)
+        return self.t_field, self.accepted
 
 
 def _axis_neighbor_min(
@@ -66,14 +80,20 @@ def compute_cost_to_go_fmm(
     goal_rc: tuple[int, int],
     blocked: np.ndarray,
     resolution_m: float,
+    workspace: FmmWorkspace | None = None,
 ) -> np.ndarray:
     h, w = cost_density.shape
     gr, gc = goal_rc
     if blocked[gr, gc]:
         raise ValueError("Goal is blocked.")
 
-    t_field = np.full((h, w), np.inf, dtype=float)
-    accepted = np.zeros((h, w), dtype=bool)
+    if workspace is None:
+        t_field = np.full((h, w), np.inf, dtype=float)
+        accepted = np.zeros((h, w), dtype=bool)
+    else:
+        t_field, accepted = workspace.ensure_shape((h, w))
+        t_field.fill(np.inf)
+        accepted.fill(False)
     tie = itertools.count()
     heap: list[tuple[float, int, int, int]] = []
 
@@ -117,4 +137,3 @@ def compute_cost_to_go_fmm(
                     heapq.heappush(heap, (val, next(tie), rr, cc))
 
     return t_field
-

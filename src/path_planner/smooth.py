@@ -929,10 +929,14 @@ def _bezier_chain_diagnostics(
     sample_ds_m: float,
     cfg: PlannerConfig,
     context: SmoothingContext | None = None,
+    lightweight: bool = False,
 ) -> dict[str, float]:
     sampled_points, tangent_headings, sampled_curvatures = sample_bezier_chain(
         segments,
-        sample_per_segment=max(35, int(1.0 / max(sample_ds_m, 1e-3))),
+        sample_per_segment=max(
+            16 if lightweight else 35,
+            int((0.65 if lightweight else 1.0) / max(sample_ds_m, 1e-3)),
+        ),
     )
     finite_curv = sampled_curvatures[np.isfinite(sampled_curvatures)]
     curv_pct = _percentiles(finite_curv)
@@ -959,7 +963,11 @@ def _bezier_chain_diagnostics(
     end_curv_max = _zone_max(finite_curv, finite_s, total_len, endpoint_zone, False)
     start_jump_max = _zone_max(angle_jumps, join_positions, join_total, endpoint_zone, True)
     end_jump_max = _zone_max(angle_jumps, join_positions, join_total, endpoint_zone, False)
-    intersections_total, endpoint_intersections = _self_intersection_counts(sampled_points, endpoint_zone)
+    if lightweight:
+        intersections_total = 0
+        endpoint_intersections = 0
+    else:
+        intersections_total, endpoint_intersections = _self_intersection_counts(sampled_points, endpoint_zone)
     endpoint_diag = _endpoint_and_terminal_diagnostics(
         sampled_points,
         tangent_headings,
@@ -1131,7 +1139,13 @@ def smooth_path_to_beziers(
     best_accepted_score = float("inf")
     accepted_attempt = -1
 
-    for attempt in range(cfg.max_smoothing_refits):
+    runtime_fast = bool(cfg.fast_runtime)
+    attempt_limit = cfg.max_smoothing_refits
+    if runtime_fast:
+        attempt_limit = max(1, min(cfg.max_smoothing_refits, cfg.runtime_fast_max_refits))
+    lightweight_diag = runtime_fast
+
+    for attempt in range(attempt_limit):
         smoothing_scale = cfg.spline_smoothing * (cfg.spline_smoothing_growth**attempt)
         spline_x, spline_y, total = _fit_centerline_with_constraints(
             resampled=resampled,
@@ -1146,18 +1160,23 @@ def smooth_path_to_beziers(
             cfg=cfg,
             attempt=attempt,
         )
-        diag = _bezier_chain_diagnostics(segments, cfg.sample_ds_m, cfg, context=context)
+        diag = _bezier_chain_diagnostics(
+            segments,
+            cfg.sample_ds_m,
+            cfg,
+            context=context,
+            lightweight=lightweight_diag,
+        )
         reject, reasons = _needs_refit(diag, raw_diag, cfg, context=context)
 
-        attempts.append(
-            {
-                "attempt": int(attempt),
-                "splineSmoothingScale": float(smoothing_scale),
-                "diagnostics": diag,
-                "rejected": bool(reject),
-                "reasons": reasons,
-            }
-        )
+        attempt_entry: dict[str, Any] = {
+            "attempt": int(attempt),
+            "splineSmoothingScale": float(smoothing_scale),
+            "diagnostics": diag,
+            "rejected": bool(reject),
+            "reasons": reasons,
+        }
+        attempts.append(attempt_entry)
 
         score = (
             5.0 * diag["maxTangentJumpDeg"]
@@ -1190,6 +1209,8 @@ def smooth_path_to_beziers(
                 best_accepted_result = (segments, anchors, tangent_vectors)
                 best_accepted_diag = diag
                 accepted_attempt = attempt
+            if runtime_fast and attempt == 0:
+                break
 
     if best_result is None or best_diag is None:
         raise RuntimeError("Failed to generate any Bezier smoothing candidate.")
@@ -1199,7 +1220,13 @@ def smooth_path_to_beziers(
         final_diag = best_accepted_diag
     else:
         segments, anchors, tangent_vectors = best_result
-        final_diag = _bezier_chain_diagnostics(segments, cfg.sample_ds_m, cfg, context=context)
+        final_diag = _bezier_chain_diagnostics(
+            segments,
+            cfg.sample_ds_m,
+            cfg,
+            context=context,
+            lightweight=runtime_fast,
+        )
 
     diagnostics: dict[str, Any] = {
         "attemptCount": int(len(attempts)),

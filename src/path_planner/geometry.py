@@ -148,9 +148,22 @@ def curvature(segment: BezierSegment, t: float) -> float:
 
 
 def max_curvature(segment: BezierSegment, samples: int = 40) -> float:
-    ts = np.linspace(0.0, 1.0, max(samples, 2))
-    vals = [curvature(segment, float(t)) for t in ts]
-    return float(max(vals))
+    n = max(samples, 2)
+    ts = np.linspace(0.0, 1.0, n, dtype=float)
+    u = 1.0 - ts
+    d1 = (
+        3.0 * (u**2)[:, None] * (segment.p1 - segment.p0)[None, :]
+        + 6.0 * (u * ts)[:, None] * (segment.p2 - segment.p1)[None, :]
+        + 3.0 * (ts**2)[:, None] * (segment.p3 - segment.p2)[None, :]
+    )
+    d2 = (
+        6.0 * u[:, None] * (segment.p2 - 2.0 * segment.p1 + segment.p0)[None, :]
+        + 6.0 * ts[:, None] * (segment.p3 - 2.0 * segment.p2 + segment.p1)[None, :]
+    )
+    num = np.abs(d1[:, 0] * d2[:, 1] - d1[:, 1] * d2[:, 0])
+    den = np.power(np.linalg.norm(d1, axis=1), 3.0)
+    vals = np.divide(num, den, out=np.zeros_like(num), where=den > 1e-12)
+    return float(np.max(vals))
 
 
 def sample_bezier_chain(
@@ -169,16 +182,33 @@ def sample_bezier_chain(
             np.empty((0,), dtype=float),
         )
 
+    n = max(2, int(sample_per_segment))
+    base_ts = np.linspace(0.0, 1.0, n, dtype=float)
     for i, seg in enumerate(seg_list):
-        ts = np.linspace(0.0, 1.0, max(2, sample_per_segment))
-        if i > 0:
-            ts = ts[1:]
-        for t in ts:
-            p = bezier_point(seg, float(t))
-            d1 = bezier_first_derivative(seg, float(t))
-            points.append(p)
-            headings.append(angle_rad(d1))
-            curvatures.append(curvature(seg, float(t)))
+        ts = base_ts if i == 0 else base_ts[1:]
+        u = 1.0 - ts
+        p = (
+            (u**3)[:, None] * seg.p0[None, :]
+            + 3.0 * ((u**2) * ts)[:, None] * seg.p1[None, :]
+            + 3.0 * (u * (ts**2))[:, None] * seg.p2[None, :]
+            + (ts**3)[:, None] * seg.p3[None, :]
+        )
+        d1 = (
+            3.0 * (u**2)[:, None] * (seg.p1 - seg.p0)[None, :]
+            + 6.0 * (u * ts)[:, None] * (seg.p2 - seg.p1)[None, :]
+            + 3.0 * (ts**2)[:, None] * (seg.p3 - seg.p2)[None, :]
+        )
+        d2 = (
+            6.0 * u[:, None] * (seg.p2 - 2.0 * seg.p1 + seg.p0)[None, :]
+            + 6.0 * ts[:, None] * (seg.p3 - 2.0 * seg.p2 + seg.p1)[None, :]
+        )
+        num = np.abs(d1[:, 0] * d2[:, 1] - d1[:, 1] * d2[:, 0])
+        den = np.power(np.linalg.norm(d1, axis=1), 3.0)
+        curv = np.divide(num, den, out=np.zeros_like(num), where=den > 1e-12)
+        head = np.arctan2(d1[:, 1], d1[:, 0])
+        points.extend(p)
+        headings.extend(head.tolist())
+        curvatures.extend(curv.tolist())
 
     return (
         np.asarray(points, dtype=float),
@@ -212,10 +242,45 @@ def bilinear_sample_grid(arr: np.ndarray, x_idx: float, y_idx: float) -> float:
     return (1.0 - ty) * top + ty * bot
 
 
+def bilinear_sample_grid_vectorized(
+    arr: np.ndarray,
+    x_idx: np.ndarray,
+    y_idx: np.ndarray,
+) -> np.ndarray:
+    if x_idx.size == 0:
+        return np.empty((0,), dtype=float)
+    h, w = arr.shape
+    x = np.asarray(x_idx, dtype=float)
+    y = np.asarray(y_idx, dtype=float)
+    out = np.full_like(x, np.nan, dtype=float)
+    inside = (x >= 0.0) & (y >= 0.0) & (x <= (w - 1)) & (y <= (h - 1))
+    if not np.any(inside):
+        return out
+
+    xi = x[inside]
+    yi = y[inside]
+    x0 = np.floor(xi).astype(np.int64)
+    y0 = np.floor(yi).astype(np.int64)
+    x1 = np.minimum(x0 + 1, w - 1)
+    y1 = np.minimum(y0 + 1, h - 1)
+    tx = xi - x0
+    ty = yi - y0
+
+    v00 = arr[y0, x0]
+    v10 = arr[y0, x1]
+    v01 = arr[y1, x0]
+    v11 = arr[y1, x1]
+    vals = (1.0 - ty) * ((1.0 - tx) * v00 + tx * v10) + ty * ((1.0 - tx) * v01 + tx * v11)
+    invalid = np.isnan(v00) | np.isnan(v10) | np.isnan(v01) | np.isnan(v11)
+    vals = np.asarray(vals, dtype=float)
+    vals[invalid] = np.nan
+    out[inside] = vals
+    return out
+
+
 def world_to_grid(x_m: float, y_m: float, resolution_m: float) -> tuple[float, float]:
     return x_m / resolution_m, y_m / resolution_m
 
 
 def grid_to_world(x_idx: float, y_idx: float, resolution_m: float) -> tuple[float, float]:
     return x_idx * resolution_m, y_idx * resolution_m
-

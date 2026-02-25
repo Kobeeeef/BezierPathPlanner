@@ -65,12 +65,10 @@ def compute_holonomic_rotation_profile(
     delta = shortest_angle_delta(start_rad, goal_rad)
     finish = max(1e-3, min(1.0, float(cfg.rotation_finish_progress)))
 
-    out = np.empty_like(u, dtype=float)
-    for i, uu in enumerate(u):
-        if uu >= finish:
-            out[i] = goal_rad
-            continue
-        eased = smoothstep01(uu / finish)
-        out[i] = wrap_to_pi(start_rad + delta * eased)
-
+    clamped = np.clip(u / finish, 0.0, 1.0)
+    eased = clamped * clamped * (3.0 - 2.0 * clamped)
+    out = start_rad + delta * eased
+    out = (out + math.pi) % (2.0 * math.pi) - math.pi
+    out = np.asarray(out, dtype=float)
+    out[u >= finish] = goal_rad
     return out

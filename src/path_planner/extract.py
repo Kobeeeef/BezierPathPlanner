@@ -8,17 +8,16 @@ from .config import PlannerConfig
 from .geometry import bilinear_sample_grid, grid_to_world, normalize, world_to_grid
 
 
-def _neighbors8(r: int, c: int) -> list[tuple[int, int]]:
-    return [
-        (r - 1, c),
-        (r + 1, c),
-        (r, c - 1),
-        (r, c + 1),
-        (r - 1, c - 1),
-        (r - 1, c + 1),
-        (r + 1, c - 1),
-        (r + 1, c + 1),
-    ]
+_NEIGHBORS8: tuple[tuple[int, int], ...] = (
+    (-1, 0),
+    (1, 0),
+    (0, -1),
+    (0, 1),
+    (-1, -1),
+    (-1, 1),
+    (1, -1),
+    (1, 1),
+)
 
 
 def _inside_grid(shape: tuple[int, int], x_idx: float, y_idx: float) -> bool:
@@ -50,7 +49,9 @@ def _best_neighbor_step(
     t_here = float(t_field[r, c])
     best_val = t_here
     best: tuple[int, int] | None = None
-    for rr, cc in _neighbors8(r, c):
+    for dr, dc in _NEIGHBORS8:
+        rr = r + dr
+        cc = c + dc
         if rr < 0 or cc < 0 or rr >= h or cc >= w:
             continue
         if blocked[rr, cc]:
@@ -64,6 +65,18 @@ def _best_neighbor_step(
         return None
     rr, cc = best
     return float(cc), float(rr)
+
+
+def _local_gradient(t_field: np.ndarray, x_idx: float, y_idx: float, resolution_m: float) -> tuple[float, float]:
+    dx = 1.0
+    gx0 = bilinear_sample_grid(t_field, x_idx - dx, y_idx)
+    gx1 = bilinear_sample_grid(t_field, x_idx + dx, y_idx)
+    gy0 = bilinear_sample_grid(t_field, x_idx, y_idx - dx)
+    gy1 = bilinear_sample_grid(t_field, x_idx, y_idx + dx)
+    if not (np.isfinite(gx0) and np.isfinite(gx1) and np.isfinite(gy0) and np.isfinite(gy1)):
+        return float("nan"), float("nan")
+    inv = 1.0 / max(2.0 * resolution_m, 1e-9)
+    return (gx1 - gx0) * inv, (gy1 - gy0) * inv
 
 
 def _heading_unit(heading_deg: float | None) -> np.ndarray | None:
@@ -105,11 +118,12 @@ def extract_path_from_cost_to_go(
     if finite.size == 0:
         raise RuntimeError("Cost-to-go field is fully infinite.")
 
-    t_work = np.asarray(t_field, dtype=float).copy()
-    inf_fill = float(np.max(finite)) + 1e6
-    t_work[~np.isfinite(t_work)] = inf_fill
-
-    grad_y, grad_x = np.gradient(t_work, res, res)
+    if np.all(np.isfinite(t_field)):
+        t_work = np.asarray(t_field, dtype=float)
+    else:
+        t_work = np.asarray(t_field, dtype=float).copy()
+        inf_fill = float(np.max(finite)) + 1e6
+        t_work[~np.isfinite(t_work)] = inf_fill
 
     raw_world: list[tuple[float, float]] = []
     raw_cells: list[tuple[int, int]] = []
@@ -124,6 +138,8 @@ def extract_path_from_cost_to_go(
     start_lock_m = max(0.0, float(cfg.start_approach_lock_distance_m))
     goal_lock_m = max(0.0, float(cfg.goal_approach_lock_distance_m))
     overshoot_tol_m = max(0.0, float(cfg.endpoint_overshoot_tolerance_m))
+    start_np = np.asarray(start_xy, dtype=float)
+    goal_np = np.asarray(goal_xy, dtype=float)
 
     for _ in range(cfg.max_extract_steps):
         x_m, y_m = grid_to_world(cur_x_idx, cur_y_idx, res)
@@ -148,8 +164,7 @@ def extract_path_from_cost_to_go(
             visited.add(q)
 
             t_here = bilinear_sample_grid(t_work, cur_x_idx, cur_y_idx)
-            gx = bilinear_sample_grid(grad_x, cur_x_idx, cur_y_idx)
-            gy = bilinear_sample_grid(grad_y, cur_x_idx, cur_y_idx)
+            gx, gy = _local_gradient(t_work, cur_x_idx, cur_y_idx, res)
             valid_grad = (
                 np.isfinite(gx)
                 and np.isfinite(gy)
@@ -167,7 +182,7 @@ def extract_path_from_cost_to_go(
 
                 cur_world = np.array([x_m, y_m], dtype=float)
                 if start_heading is not None and start_lock_m > 1e-9:
-                    dist_start = float(np.linalg.norm(cur_world - np.asarray(start_xy, dtype=float)))
+                    dist_start = float(np.linalg.norm(cur_world - start_np))
                     w_start = _lock_weight(dist_start, start_lock_m)
                     if w_start > 0.0:
                         blended = normalize(
@@ -178,10 +193,10 @@ def extract_path_from_cost_to_go(
                             dir_x, dir_y = float(blended[0]), float(blended[1])
 
                 if goal_heading is not None and goal_lock_m > 1e-9:
-                    dist_goal = float(np.linalg.norm(np.asarray(goal_xy, dtype=float) - cur_world))
+                    dist_goal = float(np.linalg.norm(goal_np - cur_world))
                     w_goal = _lock_weight(dist_goal, goal_lock_m)
                     if w_goal > 0.0:
-                        to_goal = normalize(np.asarray(goal_xy, dtype=float) - cur_world)
+                        to_goal = normalize(goal_np - cur_world)
                         preferred = normalize(0.35 * to_goal + 0.65 * goal_heading)
                         blended = normalize(
                             (1.0 - w_goal) * np.array([dir_x, dir_y], dtype=float) + w_goal * preferred
@@ -203,16 +218,16 @@ def extract_path_from_cost_to_go(
                     t_next = bilinear_sample_grid(t_work, cand_x, cand_y)
                     cand_world = np.asarray(grid_to_world(cand_x, cand_y, res), dtype=float)
                     dist_goal_cur = float(
-                        np.linalg.norm(np.asarray(goal_xy, dtype=float) - np.asarray([x_m, y_m], dtype=float))
+                        np.linalg.norm(goal_np - np.asarray([x_m, y_m], dtype=float))
                     )
-                    dist_goal_next = float(np.linalg.norm(np.asarray(goal_xy, dtype=float) - cand_world))
+                    dist_goal_next = float(np.linalg.norm(goal_np - cand_world))
                     terminal_lock = goal_heading is not None and goal_lock_m > 1e-9 and (
                         dist_goal_cur <= goal_lock_m + cfg.goal_tolerance_m
                     )
                     terminal_invalid = False
                     if terminal_lock:
-                        cur_to_goal = np.asarray(goal_xy, dtype=float) - np.asarray([x_m, y_m], dtype=float)
-                        nxt_to_goal = np.asarray(goal_xy, dtype=float) - cand_world
+                        cur_to_goal = goal_np - np.asarray([x_m, y_m], dtype=float)
+                        nxt_to_goal = goal_np - cand_world
                         cur_proj = float(np.dot(cur_to_goal, goal_heading))
                         nxt_proj = float(np.dot(nxt_to_goal, goal_heading))
                         if (not cfg.allow_terminal_overshoot) and (nxt_proj < -overshoot_tol_m):

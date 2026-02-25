@@ -7,7 +7,7 @@ import numpy as np
 from scipy.ndimage import distance_transform_edt
 
 from .config import PlannerConfig
-from .geometry import bilinear_sample_grid, world_to_grid
+from .geometry import bilinear_sample_grid_vectorized
 
 
 @dataclass(frozen=True)
@@ -22,6 +22,19 @@ class ClearanceLayers:
     combined_penalty: np.ndarray
     planning_blocked: np.ndarray
     hard_clearance_feasible: bool
+
+
+@dataclass(frozen=True)
+class ClearanceBase:
+    required_clearance_m: float
+    wall_clearance_m: np.ndarray
+    heat_region_clearance_m: np.ndarray
+    heat_region_mask: np.ndarray
+    heat_region_threshold: float | None
+    wall_penalty: np.ndarray
+    heat_region_penalty: np.ndarray
+    traversable_mask: np.ndarray
+    feasible_mask: np.ndarray
 
 
 def _neighbors4(r: int, c: int) -> list[tuple[int, int]]:
@@ -127,6 +140,21 @@ def build_clearance_layers(
     start_rc: tuple[int, int],
     goal_rc: tuple[int, int],
 ) -> ClearanceLayers:
+    base = precompute_clearance_base(heat=heat, blocked=blocked, cfg=cfg)
+    return clearance_layers_from_base(
+        base=base,
+        blocked=blocked,
+        cfg=cfg,
+        start_rc=start_rc,
+        goal_rc=goal_rc,
+    )
+
+
+def precompute_clearance_base(
+    heat: np.ndarray,
+    blocked: np.ndarray,
+    cfg: PlannerConfig,
+) -> ClearanceBase:
     required = max(0.0, float(cfg.required_clearance_m))
     wall_clearance = compute_wall_clearance_field_m(blocked, cfg.resolution_m_per_cell)
     traversable = ~blocked
@@ -139,14 +167,6 @@ def build_clearance_layers(
     )
     wall_penalty[blocked] = 0.0
 
-    feasible_mask = traversable & (wall_clearance >= required - 1e-9)
-    hard_feasible = _connected(feasible_mask, start_rc, goal_rc)
-    planning_blocked = blocked.copy()
-    if cfg.enforce_hard_clearance_if_feasible and hard_feasible:
-        planning_blocked |= wall_clearance < required
-        planning_blocked[start_rc] = False
-        planning_blocked[goal_rc] = False
-
     heat_region_mask, heat_thresh = derive_heat_region_mask(heat, blocked, cfg)
     heat_region_clearance = compute_heat_region_clearance_field_m(
         heat_region_mask, blocked, cfg.resolution_m_per_cell
@@ -158,9 +178,8 @@ def build_clearance_layers(
             -heat_region_clearance[traversable] / heat_decay
         )
 
-    combined = wall_penalty + heat_region_penalty
-    combined[planning_blocked] = 0.0
-    return ClearanceLayers(
+    feasible_mask = traversable & (wall_clearance >= required - 1e-9)
+    return ClearanceBase(
         required_clearance_m=required,
         wall_clearance_m=wall_clearance,
         heat_region_clearance_m=heat_region_clearance,
@@ -168,6 +187,36 @@ def build_clearance_layers(
         heat_region_threshold=heat_thresh,
         wall_penalty=wall_penalty,
         heat_region_penalty=heat_region_penalty,
+        traversable_mask=traversable,
+        feasible_mask=feasible_mask,
+    )
+
+
+def clearance_layers_from_base(
+    base: ClearanceBase,
+    blocked: np.ndarray,
+    cfg: PlannerConfig,
+    start_rc: tuple[int, int],
+    goal_rc: tuple[int, int],
+) -> ClearanceLayers:
+    feasible_mask = base.feasible_mask
+    hard_feasible = _connected(feasible_mask, start_rc, goal_rc)
+    planning_blocked = blocked.copy()
+    if cfg.enforce_hard_clearance_if_feasible and hard_feasible:
+        planning_blocked |= base.wall_clearance_m < base.required_clearance_m
+        planning_blocked[start_rc] = False
+        planning_blocked[goal_rc] = False
+    combined = base.wall_penalty + base.heat_region_penalty
+    combined[planning_blocked] = 0.0
+
+    return ClearanceLayers(
+        required_clearance_m=base.required_clearance_m,
+        wall_clearance_m=base.wall_clearance_m,
+        heat_region_clearance_m=base.heat_region_clearance_m,
+        heat_region_mask=base.heat_region_mask,
+        heat_region_threshold=base.heat_region_threshold,
+        wall_penalty=base.wall_penalty,
+        heat_region_penalty=base.heat_region_penalty,
         combined_penalty=combined,
         planning_blocked=planning_blocked,
         hard_clearance_feasible=hard_feasible,
@@ -181,8 +230,7 @@ def sample_field_along_path(
 ) -> np.ndarray:
     if len(points_world) == 0:
         return np.empty((0,), dtype=float)
-    out = np.empty((len(points_world),), dtype=float)
-    for i, p in enumerate(points_world):
-        x_idx, y_idx = world_to_grid(float(p[0]), float(p[1]), resolution_m)
-        out[i] = float(bilinear_sample_grid(field, x_idx, y_idx))
-    return out
+    points = np.asarray(points_world, dtype=float)
+    x_idx = points[:, 0] / float(resolution_m)
+    y_idx = points[:, 1] / float(resolution_m)
+    return bilinear_sample_grid_vectorized(field, x_idx, y_idx)

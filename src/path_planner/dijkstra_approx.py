@@ -3,8 +3,19 @@ from __future__ import annotations
 import heapq
 import itertools
 import math
+from dataclasses import dataclass
 
 import numpy as np
+
+
+@dataclass
+class DijkstraWorkspace:
+    dist: np.ndarray | None = None
+
+    def ensure_shape(self, shape: tuple[int, int]) -> np.ndarray:
+        if self.dist is None or self.dist.shape != shape:
+            self.dist = np.empty(shape, dtype=float)
+        return self.dist
 
 
 def compute_cost_to_go_dijkstra(
@@ -12,13 +23,18 @@ def compute_cost_to_go_dijkstra(
     goal_rc: tuple[int, int],
     blocked: np.ndarray,
     resolution_m: float,
+    workspace: DijkstraWorkspace | None = None,
 ) -> np.ndarray:
     h, w = cost_density.shape
     gr, gc = goal_rc
     if blocked[gr, gc]:
         raise ValueError("Goal is blocked.")
 
-    dist = np.full((h, w), np.inf, dtype=float)
+    if workspace is None:
+        dist = np.full((h, w), np.inf, dtype=float)
+    else:
+        dist = workspace.ensure_shape((h, w))
+        dist.fill(np.inf)
     dist[gr, gc] = 0.0
 
     tie = itertools.count()
@@ -54,4 +70,3 @@ def compute_cost_to_go_dijkstra(
                 heapq.heappush(heap, (candidate, next(tie), rr, cc))
 
     return dist
-

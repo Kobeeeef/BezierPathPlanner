@@ -1,27 +1,239 @@
 [
   {
-    "scenario": "small_islands_weave",
-    "description": "Multiple small hot islands arranged to induce repeated up/down curving with a final rise into the goal.",
+    "scenario": "hot_island",
+    "description": "Very hot center with cooler corridors around it.",
     "summary": {
       "plannerMode": "fmm",
+      "runtimeMode": "debug_diagnostics",
       "pathExists": true,
       "holonomicRotationMode": "independent_profile",
       "requiredClearanceM": 0.7210407640085653,
       "hardClearanceFeasible": false,
-      "rawLengthM": 14.489761365878287,
-      "smoothedLengthM": 14.25430050420308,
-      "rawIntegratedCost": 187.1013880484202,
-      "smoothedIntegratedCost": 191.08707932628107,
-      "rawObjectiveIntegratedCost": 188.58062201076334,
-      "smoothedObjectiveIntegratedCost": 192.69414500050829,
+      "rawLengthM": 13.952240099984106,
+      "smoothedLengthM": 13.550892647787451,
+      "rawIntegratedCost": 242.6032425467515,
+      "smoothedIntegratedCost": 253.61123247423626,
+      "rawObjectiveIntegratedCost": 243.54943738484948,
+      "smoothedObjectiveIntegratedCost": 254.40834533037713,
+      "minWallClearanceM": 0.5963615274907559,
+      "minHeatRegionClearanceM": 1.4920448409012463,
+      "startEndpointAlignmentErrorDeg": 2.68053685158066,
+      "endEndpointAlignmentErrorDeg": 3.0505254111821634,
+      "startCostToGo": 243.7604841208203,
+      "bezierSegmentCount": 7,
+      "smoothingAcceptedAttempt": 1,
+      "smoothingAttemptCount": 6,
+      "timingMs": {
+        "preprocess": 0.9173,
+        "clearance_validation": 0.06079999999999999,
+        "propagation": 43.1872,
+        "extraction": 2.766,
+        "smoothing": 267.3889,
+        "rotation_profile_generation": 0.0336,
+        "speed_profile_generation": 0.1063,
+        "totalRuntimeMs": 314.9394,
+        "exportSerializationMs": 1215.2368999995815,
+        "totalRuntimeWithExportMs": 1530.1762999995815
+      },
+      "backend": {
+        "requested": "cpu",
+        "used": "cpu",
+        "reason": "cpu_requested"
+      },
+      "runtimeCache": {
+        "environmentCacheHits": 0,
+        "environmentCacheMisses": 1,
+        "goalFieldCacheHits": 0,
+        "goalFieldCacheMisses": 1,
+        "environmentResets": 0
+      }
+    },
+    "files": {
+      "pathplanner_concept_json": "outputs\\hot_island\\pathplanner_concept.json",
+      "best_effort_path_json": "outputs\\hot_island\\pathplanner_best_effort.path.json",
+      "waypoints_csv": "outputs\\hot_island\\pathplanner_waypoints.csv",
+      "plan_summary_json": "outputs\\hot_island\\plan_summary.json",
+      "heatmap": "outputs\\hot_island\\heatmap.png",
+      "cost_to_go": "outputs\\hot_island\\cost_to_go.png",
+      "path_overlay": "outputs\\hot_island\\path_overlay.png",
+      "curvature_overlay": "outputs\\hot_island\\curvature_overlay.png",
+      "speed_overlay": "outputs\\hot_island\\speed_overlay.png",
+      "comparison_plot": "outputs\\hot_island\\comparison.png"
+    },
+    "runtimePayload": null
+  },
+  {
+    "scenario": "uniform_high",
+    "description": "All cells are high heat but finite/traversable.",
+    "summary": {
+      "plannerMode": "fmm",
+      "runtimeMode": "debug_diagnostics",
+      "pathExists": true,
+      "holonomicRotationMode": "independent_profile",
+      "requiredClearanceM": 0.7210407640085653,
+      "hardClearanceFeasible": false,
+      "rawLengthM": 10.869095417481475,
+      "smoothedLengthM": 10.869892574166153,
+      "rawIntegratedCost": 565.3271101751699,
+      "smoothedIntegratedCost": 565.4359658604637,
+      "rawObjectiveIntegratedCost": 565.7187774349933,
+      "smoothedObjectiveIntegratedCost": 565.8473081713057,
+      "minWallClearanceM": 0.6000000000000002,
+      "minHeatRegionClearanceM": 0.6710168218121073,
+      "startEndpointAlignmentErrorDeg": 0.4668581161390888,
+      "endEndpointAlignmentErrorDeg": 0.8576117265205098,
+      "startCostToGo": 567.359398703214,
+      "bezierSegmentCount": 5,
+      "smoothingAcceptedAttempt": 2,
+      "smoothingAttemptCount": 6,
+      "timingMs": {
+        "preprocess": 0.6527,
+        "clearance_validation": 0.0625,
+        "propagation": 31.6044,
+        "extraction": 2.1879,
+        "smoothing": 178.3941,
+        "rotation_profile_generation": 0.0208,
+        "speed_profile_generation": 0.0783,
+        "totalRuntimeMs": 213.4614,
+        "exportSerializationMs": 731.5402999993239,
+        "totalRuntimeWithExportMs": 945.0016999993239
+      },
+      "backend": {
+        "requested": "cpu",
+        "used": "cpu",
+        "reason": "cpu_requested"
+      },
+      "runtimeCache": {
+        "environmentCacheHits": 0,
+        "environmentCacheMisses": 3,
+        "goalFieldCacheHits": 0,
+        "goalFieldCacheMisses": 3,
+        "environmentResets": 0
+      }
+    },
+    "files": {
+      "pathplanner_concept_json": "outputs\\uniform_high\\pathplanner_concept.json",
+      "best_effort_path_json": "outputs\\uniform_high\\pathplanner_best_effort.path.json",
+      "waypoints_csv": "outputs\\uniform_high\\pathplanner_waypoints.csv",
+      "plan_summary_json": "outputs\\uniform_high\\plan_summary.json",
+      "heatmap": "outputs\\uniform_high\\heatmap.png",
+      "cost_to_go": "outputs\\uniform_high\\cost_to_go.png",
+      "path_overlay": "outputs\\uniform_high\\path_overlay.png",
+      "curvature_overlay": "outputs\\uniform_high\\curvature_overlay.png",
+      "speed_overlay": "outputs\\uniform_high\\speed_overlay.png"
+    },
+    "runtimePayload": null
+  },
+  {
+    "scenario": "double_hot_mid_corridor",
+    "description": "Start mid-left to mid-right with two large hot circles and a clear middle corridor between them.",
+    "summary": {
+      "plannerMode": "fmm",
+      "runtimeMode": "debug_diagnostics",
+      "pathExists": true,
+      "holonomicRotationMode": "independent_profile",
+      "requiredClearanceM": 0.7210407640085653,
+      "hardClearanceFeasible": false,
+      "rawLengthM": 14.10285754884016,
+      "smoothedLengthM": 14.14698816218355,
+      "rawIntegratedCost": 232.7538738007766,
+      "smoothedIntegratedCost": 234.82816767900863,
+      "rawObjectiveIntegratedCost": 234.2636066778478,
+      "smoothedObjectiveIntegratedCost": 236.28815660760156,
+      "minWallClearanceM": 0.48,
+      "minHeatRegionClearanceM": 1.5667807392084603,
+      "startEndpointAlignmentErrorDeg": 2.9892611081540457,
+      "endEndpointAlignmentErrorDeg": 3.0434784103996173,
+      "startCostToGo": 235.93146604431982,
+      "bezierSegmentCount": 8,
+      "smoothingAcceptedAttempt": 1,
+      "smoothingAttemptCount": 6,
+      "timingMs": {
+        "preprocess": 0.9883,
+        "clearance_validation": 0.0631,
+        "propagation": 49.6735,
+        "extraction": 2.5493,
+        "smoothing": 316.9282,
+        "rotation_profile_generation": 0.0201,
+        "speed_profile_generation": 0.117,
+        "totalRuntimeMs": 370.8639,
+        "exportSerializationMs": 717.3285999997461,
+        "totalRuntimeWithExportMs": 1088.1924999997461
+      },
+      "backend": {
+        "requested": "cpu",
+        "used": "cpu",
+        "reason": "cpu_requested"
+      },
+      "runtimeCache": {
+        "environmentCacheHits": 0,
+        "environmentCacheMisses": 4,
+        "goalFieldCacheHits": 0,
+        "goalFieldCacheMisses": 4,
+        "environmentResets": 0
+      }
+    },
+    "files": {
+      "pathplanner_concept_json": "outputs\\double_hot_mid_corridor\\pathplanner_concept.json",
+      "best_effort_path_json": "outputs\\double_hot_mid_corridor\\pathplanner_best_effort.path.json",
+      "waypoints_csv": "outputs\\double_hot_mid_corridor\\pathplanner_waypoints.csv",
+      "plan_summary_json": "outputs\\double_hot_mid_corridor\\plan_summary.json",
+      "heatmap": "outputs\\double_hot_mid_corridor\\heatmap.png",
+      "cost_to_go": "outputs\\double_hot_mid_corridor\\cost_to_go.png",
+      "path_overlay": "outputs\\double_hot_mid_corridor\\path_overlay.png",
+      "curvature_overlay": "outputs\\double_hot_mid_corridor\\curvature_overlay.png",
+      "speed_overlay": "outputs\\double_hot_mid_corridor\\speed_overlay.png"
+    },
+    "runtimePayload": null
+  },
+  {
+    "scenario": "small_islands_weave",
+    "description": "Multiple small hot islands arranged to induce repeated up/down curving with a final rise into the goal.",
+    "summary": {
+      "plannerMode": "fmm",
+      "runtimeMode": "debug_diagnostics",
+      "pathExists": true,
+      "holonomicRotationMode": "independent_profile",
+      "requiredClearanceM": 0.7210407640085653,
+      "hardClearanceFeasible": false,
+      "rawLengthM": 14.489761365878284,
+      "smoothedLengthM": 14.25396950714045,
+      "rawIntegratedCost": 187.10138804842023,
+      "smoothedIntegratedCost": 191.02609916303533,
+      "rawObjectiveIntegratedCost": 188.58062201076322,
+      "smoothedObjectiveIntegratedCost": 192.63683984349848,
       "minWallClearanceM": 0.56,
-      "minHeatRegionClearanceM": 0.21919217424748766,
+      "minHeatRegionClearanceM": 0.2201329191469774,
       "startEndpointAlignmentErrorDeg": 1.0120670592430403,
-      "endEndpointAlignmentErrorDeg": 1.5067696654591922,
+      "endEndpointAlignmentErrorDeg": 1.5067696654591667,
       "startCostToGo": 193.6287271923169,
       "bezierSegmentCount": 8,
       "smoothingAcceptedAttempt": 0,
-      "smoothingAttemptCount": 6
+      "smoothingAttemptCount": 6,
+      "timingMs": {
+        "preprocess": 1.3274,
+        "clearance_validation": 0.0621,
+        "propagation": 61.3907,
+        "extraction": 2.7113,
+        "smoothing": 287.4835,
+        "rotation_profile_generation": 0.0231,
+        "speed_profile_generation": 0.1178,
+        "totalRuntimeMs": 353.7247,
+        "exportSerializationMs": 716.8206999995164,
+        "totalRuntimeWithExportMs": 1070.5453999995163
+      },
+      "backend": {
+        "requested": "cpu",
+        "used": "cpu",
+        "reason": "cpu_requested"
+      },
+      "runtimeCache": {
+        "environmentCacheHits": 0,
+        "environmentCacheMisses": 5,
+        "goalFieldCacheHits": 0,
+        "goalFieldCacheMisses": 5,
+        "environmentResets": 0
+      }
     },
     "files": {
       "pathplanner_concept_json": "outputs\\small_islands_weave\\pathplanner_concept.json",
@@ -33,6 +245,7 @@
       "path_overlay": "outputs\\small_islands_weave\\path_overlay.png",
       "curvature_overlay": "outputs\\small_islands_weave\\curvature_overlay.png",
       "speed_overlay": "outputs\\small_islands_weave\\speed_overlay.png"
-    }
+    },
+    "runtimePayload": null
   }
 ]

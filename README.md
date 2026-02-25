@@ -26,6 +26,12 @@ It supports:
   - `holonomicRotation*` for robot-facing direction (independent profile by default)
 - Curvature-aware speed profile (supports goal stop with end velocity `0.0`).
 - PathPlanner-concept waypoint export (anchors + control handles + end state).
+- Runtime engine for repeated replanning:
+  - environment precompute/cache reuse
+  - goal-centric cost-to-go field cache
+  - reusable planner workspaces to reduce allocations
+  - stage timing instrumentation (`propagation`, `extraction`, `smoothing`, `clearance_validation`, `rotation_profile_generation`, `exportSerializationMs`)
+- Optional backend toggle (`cpu` / `gpu` with automatic CPU fallback).
 - Plots and optional GIF animation.
 
 ## Quick Start
@@ -35,6 +41,12 @@ python main.py --scenario all --planner fmm --export both
 ```
 
 Outputs are written to `outputs/`.
+
+For low-latency replanning mode (no plots/file writes by default):
+
+```powershell
+python main.py --scenario hot_island --mode runtime_fast --no-write-artifacts --no-compare --no-animation
+```
 
 ## Scenarios
 
@@ -57,6 +69,12 @@ python main.py `
 ```
 
 - `--planner`: `fmm` or `dijkstra_approx`
+- `--mode`: `runtime_fast` (low-latency, minimal overhead) or `debug_diagnostics` (full artifacts)
+- `--compute-backend`: `cpu` (default) or `gpu` (fallbacks to CPU if unavailable)
+- `--cache-goal-fields` / `--no-cache-goal-fields`: reuse propagation fields for repeated goals
+- `--max-goal-cache-entries`: LRU cache size for goal fields
+- `--write-artifacts` / `--no-write-artifacts`: file writes (disabled by default in `runtime_fast`)
+- `--enable-plots` / `--no-plots`: plot/GIF generation
 - `--cost-mode`: `density` or `inverse_speed`
 - `--blocked-sentinel`: e.g. `nan` or numeric sentinel
 - `--holonomic-rotation-mode`: `independent_profile` (default) or `tangent_follow`
@@ -65,6 +83,8 @@ python main.py `
 - `--start-approach-lock-distance-m`, `--goal-approach-lock-distance-m`: lock/blend lengths
 - `--endpoint-zone-m`: endpoint blending/diagnostic distance (default `0.5`)
 - `--max-endpoint-curvature`: refit threshold near endpoints
+- `--enable-smoothing` / `--no-smoothing`
+- `--enable-clearance-constraints` / `--no-clearance-constraints`
 - `--object-width-m`, `--object-height-m`, `--object-shape`, `--safe-space-m`
 - `--enforce-hard-clearance-if-feasible`: uses clearance feasibility as hard constraint when possible
 - `--heat-region-clearance-enabled`: adds separate spacing preference from high-heat regions
@@ -86,6 +106,10 @@ Per scenario:
 - `pathplanner_waypoints.csv`
 - `plan_summary.json`
 
+In `runtime_fast` + `--write-artifacts`, planner writes:
+
+- `runtime_payload.json` (compact runtime payload, no debug visuals by default)
+
 `plan_summary.json` now includes smoothing quality diagnostics:
 
 - max tangent jump at Bezier joins (deg)
@@ -100,3 +124,57 @@ Per scenario:
 - segment length stats
 - raw-vs-smoothed comparison metrics
 - refit attempt log and selected attempt index
+- stage timing summary + backend/cache stats
+
+## Benchmark Suite
+
+Target-validation loop (runtime-fast only, strict `<200 ms` average gate):
+
+```powershell
+.venv\Scripts\python.exe tests/benchmark_performance.py `
+  --benchmark-kind target_loop `
+  --planner-mode fmm `
+  --replans-per-case 120 `
+  --target-avg-ms 200 `
+  --max-optimization-iterations 4 `
+  --strict
+```
+
+This mode:
+
+- measures per-run end-to-end latency from planning request to in-memory runtime payload + JSON serialization
+- runs spammable replanning scenarios:
+  - same map, same start/goal, tight loop
+  - same map, changing start/goal
+  - same start/goal, changing heatmap
+  - changing blocked mask
+- iteratively reruns with progressively faster runtime profiles until average latency passes the target or iteration limit is reached
+- reports bottlenecks and next optimization recommendations if target is not met
+
+General benchmark suite (full coverage):
+
+```powershell
+.venv\Scripts\python.exe tests/benchmark_performance.py `
+  --benchmark-kind suite `
+  --replans-per-case 40 `
+  --mode runtime_fast `
+  --planner-mode fmm
+```
+
+Outputs:
+
+- `outputs/benchmarks/benchmark_results.json`
+- `outputs/benchmarks/benchmark_results.csv`
+- terminal summary table with avg/median/p95/p99/worst/throughput, quality fail ratio, memory growth
+
+Benchmark coverage:
+
+- end-to-end latency and stage-by-stage timing
+- repeated rapid replanning (warm/cold cache)
+- same map varying start/goal
+- changing heat map / changing blocked mask
+- scenario stability across different heat distributions
+- runtime vs resolution scaling
+- with/without smoothing
+- with/without clearance constraints
+- CPU vs GPU backend comparison (with fallback reporting)

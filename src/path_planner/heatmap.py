@@ -4,6 +4,7 @@ import math
 
 import numpy as np
 
+from .backend import BackendStatus, ComputeBackend, cost_density_on_backend
 from .config import PlannerConfig
 
 
@@ -32,6 +33,21 @@ def build_cost_density(
     cfg: PlannerConfig,
     blocked_mask: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
+    cost_density, blocked, _ = build_cost_density_with_backend(
+        heat=heat,
+        cfg=cfg,
+        blocked_mask=blocked_mask,
+        compute_backend=cfg.compute_backend,
+    )
+    return cost_density, blocked
+
+
+def build_cost_density_with_backend(
+    heat: np.ndarray,
+    cfg: PlannerConfig,
+    blocked_mask: np.ndarray | None = None,
+    compute_backend: ComputeBackend = "cpu",
+) -> tuple[np.ndarray, np.ndarray, BackendStatus]:
     if heat.ndim != 2:
         raise ValueError("heat must be a 2D array.")
 
@@ -50,18 +66,17 @@ def build_cost_density(
     if np.any(trav_vals <= 0.0):
         raise ValueError("Heat values must be positive for all traversable cells.")
 
-    if cfg.cost_mode == "density":
-        w = cfg.base_cost + cfg.alpha * heat_f
-    elif cfg.cost_mode == "inverse_speed":
-        speed = 1.0 / (cfg.epsilon + heat_f)
-        w = cfg.base_cost + cfg.alpha * (1.0 / speed)
-    else:
-        raise ValueError(f"Unsupported cost_mode: {cfg.cost_mode}")
-
-    w = np.asarray(w, dtype=float)
+    w, backend_status = cost_density_on_backend(
+        heat=heat_f,
+        base_cost=float(cfg.base_cost),
+        alpha=float(cfg.alpha),
+        epsilon=float(cfg.epsilon),
+        cost_mode=cfg.cost_mode,
+        requested_backend=compute_backend,
+    )
     w[traversable] = np.maximum(w[traversable], 1e-6)
     w[blocked] = np.inf
-    return w, blocked
+    return w, blocked, backend_status
 
 
 def world_to_cell_index(
@@ -79,4 +94,3 @@ def world_to_cell_index(
             f"[0,{w * resolution_m:.3f}] x [0,{h * resolution_m:.3f}]."
         )
     return r, c
-

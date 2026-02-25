@@ -167,10 +167,59 @@ def build_best_effort_path_file(
     }
 
 
-def write_json(path: Path, payload: dict[str, Any]) -> None:
+def build_runtime_payload_compact(
+    *,
+    bezier_segments: list[BezierSegment],
+    sampled_points: np.ndarray,
+    sampled_path_tangent_headings_rad: np.ndarray,
+    sampled_holonomic_rotations_rad: np.ndarray,
+    summary: dict[str, Any],
+    required_clearance_m: float,
+    backend_status: dict[str, str],
+    cfg: PlannerConfig,
+) -> dict[str, Any]:
+    n = len(sampled_points)
+    sampled: list[dict[str, float]] = []
+    for i in range(n):
+        tangent = float(sampled_path_tangent_headings_rad[i]) if i < len(sampled_path_tangent_headings_rad) else 0.0
+        holo = float(sampled_holonomic_rotations_rad[i]) if i < len(sampled_holonomic_rotations_rad) else tangent
+        sampled.append(
+            {
+                "x": float(sampled_points[i, 0]),
+                "y": float(sampled_points[i, 1]),
+                "pathTangentHeadingRad": tangent,
+                "pathTangentHeadingDeg": float(math.degrees(tangent)),
+                "holonomicRotationRad": holo,
+                "holonomicRotationDeg": float(math.degrees(holo)),
+            }
+        )
+
+    return {
+        "format": "PathPlanner-runtime-compact",
+        "runtimeMode": cfg.runtime_mode,
+        "plannerMode": cfg.planner_mode,
+        "computeBackend": backend_status,
+        "summary": summary,
+        "requiredClearanceM": float(required_clearance_m),
+        "bezierSegments": [seg.as_dict() for seg in bezier_segments],
+        "sampledPath": sampled,
+        "goalEndState": {
+            "velocityMps": float(cfg.end_velocity_mps),
+            "rotationDeg": None if cfg.end_heading_deg is None else float(cfg.end_heading_deg),
+            "rotationRad": None
+            if cfg.end_heading_deg is None
+            else float(math.radians(cfg.end_heading_deg)),
+        },
+    }
+
+
+def write_json(path: Path, payload: dict[str, Any], compact: bool = False) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=2)
+        if compact:
+            json.dump(payload, f, separators=(",", ":"))
+        else:
+            json.dump(payload, f, indent=2)
 
 
 def write_waypoints_csv(path: Path, waypoints: list[dict[str, Any]]) -> None:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import time
 from pathlib import Path
 from typing import Any
 
@@ -13,10 +14,12 @@ from .export_pathplanner import (
     beziers_to_pathplanner_waypoints,
     build_best_effort_path_file,
     build_concept_export,
+    build_runtime_payload_compact,
     write_json,
     write_waypoints_csv,
 )
 from .planner import PlannerArtifacts, run_planner
+from .runtime import PlannerRuntime
 from .scenarios import Scenario, get_scenarios
 from .visualize import (
     save_comparison_plot,
@@ -38,6 +41,10 @@ def _parse_blocked_sentinel(value: str | None) -> float | None:
 
 def _build_cfg(args: argparse.Namespace, scenario: Scenario) -> PlannerConfig:
     cfg = PlannerConfig(
+        runtime_mode=args.mode,
+        compute_backend=args.compute_backend,
+        cache_goal_fields=args.cache_goal_fields,
+        max_goal_field_cache_entries=args.max_goal_cache_entries,
         resolution_m_per_cell=scenario.resolution_m_per_cell,
         planner_mode=args.planner,
         cost_mode=args.cost_mode,
@@ -80,6 +87,8 @@ def _build_cfg(args: argparse.Namespace, scenario: Scenario) -> PlannerConfig:
         max_tangent_jump_deg=args.max_tangent_jump_deg,
         max_endpoint_tangent_jump_deg=args.max_endpoint_tangent_jump_deg,
         handle_clamp_ratio=args.handle_clamp_ratio,
+        enable_smoothing=args.enable_smoothing,
+        enable_clearance_constraints=args.enable_clearance_constraints,
         holonomic_rotation_mode=args.holonomic_rotation_mode,
         rotation_finish_progress=args.rotation_finish_progress,
         endpoint_alignment_tolerance_deg=args.endpoint_alignment_tolerance_deg,
@@ -166,6 +175,10 @@ def _serialize_summary_payload(
             else float(math.radians(cfg.end_heading_deg)),
         },
         "tuningKnobs": {
+            "runtime_mode": cfg.runtime_mode,
+            "compute_backend": cfg.compute_backend,
+            "cache_goal_fields": cfg.cache_goal_fields,
+            "max_goal_field_cache_entries": cfg.max_goal_field_cache_entries,
             "alpha": cfg.alpha,
             "base_cost": cfg.base_cost,
             "epsilon": cfg.epsilon,
@@ -177,6 +190,7 @@ def _serialize_summary_payload(
             "max_curvature": cfg.max_curvature,
             "spline_smoothing": cfg.spline_smoothing,
             "max_smoothing_refits": cfg.max_smoothing_refits,
+            "runtime_fast_max_refits": cfg.runtime_fast_max_refits,
             "bezier_target_segment_length_m": cfg.bezier_target_segment_length_m,
             "max_tangent_jump_deg": cfg.max_tangent_jump_deg,
             "max_tangent_mag_jump_ratio": cfg.max_tangent_mag_jump_ratio,
@@ -224,6 +238,8 @@ def _serialize_summary_payload(
             "heat_region_clearance_decay_m": cfg.heat_region_clearance_decay_m,
             "enforce_hard_clearance_if_feasible": cfg.enforce_hard_clearance_if_feasible,
             "clearance_refit_threshold_m": cfg.clearance_refit_threshold_m,
+            "enable_smoothing": cfg.enable_smoothing,
+            "enable_clearance_constraints": cfg.enable_clearance_constraints,
             "end_velocity_mps": cfg.end_velocity_mps,
             "max_speed_mps": cfg.max_speed_mps,
             "max_accel_mps2": cfg.max_accel_mps2,
@@ -320,11 +336,14 @@ def _save_visuals(
 
 def _print_summary_line(scenario: Scenario, artifacts: PlannerArtifacts) -> None:
     s = artifacts.summary
+    timing = s.get("timingMs", {})
+    total_ms = float(timing.get("totalRuntimeMs", 0.0))
     print(
         f"[{scenario.name}] mode={s['plannerMode']} rawCost={s['rawIntegratedCost']:.2f} "
         f"smoothCost={s['smoothedIntegratedCost']:.2f} rawLen={s['rawLengthM']:.2f}m "
         f"smoothLen={s['smoothedLengthM']:.2f}m segments={int(s['bezierSegmentCount'])} "
-        f"minWallClr={s['minWallClearanceM']:.3f}m reqClr={s['requiredClearanceM']:.3f}m"
+        f"minWallClr={s['minWallClearanceM']:.3f}m reqClr={s['requiredClearanceM']:.3f}m "
+        f"lat={total_ms:.2f}ms"
     )
 
 
@@ -332,10 +351,12 @@ def _run_single(
     scenario: Scenario,
     args: argparse.Namespace,
     all_scenarios: dict[str, Scenario],
+    runtime: PlannerRuntime | None = None,
 ) -> dict[str, Any]:
     cfg = _build_cfg(args, scenario)
-    out_dir = Path(args.output_dir) / scenario.name
-    out_dir.mkdir(parents=True, exist_ok=True)
+    out_dir = Path(args.output_dir) / scenario.name if args.write_artifacts else None
+    if out_dir is not None:
+        out_dir.mkdir(parents=True, exist_ok=True)
 
     artifacts = run_planner(
         heat=scenario.heat,
@@ -343,66 +364,115 @@ def _run_single(
         goal_xy=scenario.goal_xy,
         blocked_mask=scenario.blocked_mask,
         cfg=cfg,
+        runtime=runtime,
+        environment_id=scenario.name,
     )
     _print_summary_line(scenario, artifacts)
 
-    waypoints = beziers_to_pathplanner_waypoints(artifacts.bezier_segments, cfg)
-    concept = build_concept_export(artifacts.bezier_segments, waypoints, cfg)
-    concept_path = out_dir / "pathplanner_concept.json"
-    write_json(concept_path, concept)
-
-    files: dict[str, str] = {"pathplanner_concept_json": str(concept_path)}
-
-    if args.export in ("both", "exact"):
-        best_effort = build_best_effort_path_file(waypoints, cfg)
-        best_path = out_dir / "pathplanner_best_effort.path.json"
-        write_json(best_path, best_effort)
-        files["best_effort_path_json"] = str(best_path)
-
-    csv_path = out_dir / "pathplanner_waypoints.csv"
-    write_waypoints_csv(csv_path, waypoints)
-    files["waypoints_csv"] = str(csv_path)
-
-    summary_payload = _serialize_summary_payload(artifacts, waypoints, cfg)
-    summary_path = out_dir / "plan_summary.json"
-    write_json(summary_path, summary_payload)
-    files["plan_summary_json"] = str(summary_path)
-
-    visuals = _save_visuals(
-        artifacts=artifacts,
-        scenario=scenario,
-        out_dir=out_dir,
-        animate=args.animation,
+    export_start = time.perf_counter()
+    files: dict[str, str] = {}
+    runtime_payload = build_runtime_payload_compact(
+        bezier_segments=artifacts.bezier_segments,
+        sampled_points=artifacts.sampled_smoothed_points,
+        sampled_path_tangent_headings_rad=artifacts.sampled_path_tangent_headings_rad,
+        sampled_holonomic_rotations_rad=artifacts.sampled_holonomic_rotations_rad,
+        summary=artifacts.summary,
+        required_clearance_m=artifacts.required_clearance_m,
+        backend_status=artifacts.backend_status,
+        cfg=cfg,
     )
-    files.update(visuals)
+    waypoints: list[dict[str, Any]] = []
+    summary_path: Path | None = None
 
-    if args.compare and scenario.name == "hot_island":
-        shortest_cfg = cfg.with_updates(alpha=0.0, planner_mode="dijkstra_approx")
-        shortest = run_planner(
-            heat=scenario.heat,
-            start_xy=scenario.start_xy,
-            goal_xy=scenario.goal_xy,
-            blocked_mask=scenario.blocked_mask,
-            cfg=shortest_cfg,
-        )
-        compare_path = out_dir / "comparison.png"
-        save_comparison_plot(
-            out_path=compare_path,
-            heat=scenario.heat,
-            resolution_m=scenario.resolution_m_per_cell,
-            shortest_path=shortest.raw_path_world,
-            low_heat_path=artifacts.raw_path_world,
-            smoothed_points=artifacts.sampled_smoothed_points,
-            start_xy=scenario.start_xy,
-            goal_xy=scenario.goal_xy,
-        )
-        files["comparison_plot"] = str(compare_path)
+    if args.mode == "debug_diagnostics" or args.write_artifacts:
+        waypoints = beziers_to_pathplanner_waypoints(artifacts.bezier_segments, cfg)
+
+    if args.write_artifacts and out_dir is not None:
+        if args.mode == "runtime_fast":
+            compact_path = out_dir / "runtime_payload.json"
+            files["runtime_payload_json"] = str(compact_path)
+        else:
+            concept = build_concept_export(artifacts.bezier_segments, waypoints, cfg)
+            concept_path = out_dir / "pathplanner_concept.json"
+            write_json(concept_path, concept)
+            files["pathplanner_concept_json"] = str(concept_path)
+
+            if args.export in ("both", "exact"):
+                best_effort = build_best_effort_path_file(waypoints, cfg)
+                best_path = out_dir / "pathplanner_best_effort.path.json"
+                write_json(best_path, best_effort)
+                files["best_effort_path_json"] = str(best_path)
+
+            csv_path = out_dir / "pathplanner_waypoints.csv"
+            write_waypoints_csv(csv_path, waypoints)
+            files["waypoints_csv"] = str(csv_path)
+
+            summary_payload = _serialize_summary_payload(artifacts, waypoints, cfg)
+            summary_path = out_dir / "plan_summary.json"
+            write_json(summary_path, summary_payload)
+            files["plan_summary_json"] = str(summary_path)
+
+            if args.enable_plots:
+                visuals = _save_visuals(
+                    artifacts=artifacts,
+                    scenario=scenario,
+                    out_dir=out_dir,
+                    animate=args.animation,
+                )
+                files.update(visuals)
+
+            if args.compare and scenario.name == "hot_island":
+                shortest_cfg = cfg.with_updates(alpha=0.0, planner_mode="dijkstra_approx")
+                shortest = run_planner(
+                    heat=scenario.heat,
+                    start_xy=scenario.start_xy,
+                    goal_xy=scenario.goal_xy,
+                    blocked_mask=scenario.blocked_mask,
+                    cfg=shortest_cfg,
+                    runtime=runtime,
+                    environment_id=f"{scenario.name}_shortest",
+                )
+                compare_path = out_dir / "comparison.png"
+                save_comparison_plot(
+                    out_path=compare_path,
+                    heat=scenario.heat,
+                    resolution_m=scenario.resolution_m_per_cell,
+                    shortest_path=shortest.raw_path_world,
+                    low_heat_path=artifacts.raw_path_world,
+                    smoothed_points=artifacts.sampled_smoothed_points,
+                    start_xy=scenario.start_xy,
+                    goal_xy=scenario.goal_xy,
+                )
+                files["comparison_plot"] = str(compare_path)
+
+    export_ms = (time.perf_counter() - export_start) * 1000.0
+    artifacts.stage_timings_ms["exportSerializationMs"] = float(export_ms)
+    artifacts.stage_timings_ms["totalRuntimeWithExportMs"] = float(
+        artifacts.stage_timings_ms.get("totalRuntimeMs", 0.0) + export_ms
+    )
+    artifacts.summary["timingMs"] = artifacts.stage_timings_ms
+    runtime_payload = build_runtime_payload_compact(
+        bezier_segments=artifacts.bezier_segments,
+        sampled_points=artifacts.sampled_smoothed_points,
+        sampled_path_tangent_headings_rad=artifacts.sampled_path_tangent_headings_rad,
+        sampled_holonomic_rotations_rad=artifacts.sampled_holonomic_rotations_rad,
+        summary=artifacts.summary,
+        required_clearance_m=artifacts.required_clearance_m,
+        backend_status=artifacts.backend_status,
+        cfg=cfg,
+    )
+    if summary_path is not None:
+        write_json(summary_path, _serialize_summary_payload(artifacts, waypoints, cfg))
+    if args.write_artifacts and out_dir is not None and args.mode == "runtime_fast":
+        compact_path = out_dir / "runtime_payload.json"
+        write_json(compact_path, runtime_payload, compact=True)
 
     result = {
         "scenario": scenario.name,
         "description": scenario.description,
         "summary": artifacts.summary,
         "files": files,
+        "runtimePayload": runtime_payload if args.mode == "runtime_fast" else None,
     }
     return result
 
@@ -411,6 +481,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         description="Heatmap-based FMM path planner with Bezier smoothing and PathPlanner-style export."
     )
+    p.add_argument("--mode", default="debug_diagnostics", choices=["runtime_fast", "debug_diagnostics"])
+    p.add_argument("--compute-backend", default="cpu", choices=["cpu", "gpu"])
+    p.add_argument("--cache-goal-fields", dest="cache_goal_fields", action="store_true")
+    p.add_argument("--no-cache-goal-fields", dest="cache_goal_fields", action="store_false")
+    p.set_defaults(cache_goal_fields=True)
+    p.add_argument("--max-goal-cache-entries", type=int, default=12)
     p.add_argument(
         "--scenario",
         default="all",
@@ -456,6 +532,20 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--max-tangent-jump-deg", type=float, default=1.0)
     p.add_argument("--max-endpoint-tangent-jump-deg", type=float, default=2.0)
     p.add_argument("--handle-clamp-ratio", type=float, default=0.45)
+    p.add_argument("--enable-smoothing", dest="enable_smoothing", action="store_true")
+    p.add_argument("--no-smoothing", dest="enable_smoothing", action="store_false")
+    p.set_defaults(enable_smoothing=True)
+    p.add_argument(
+        "--enable-clearance-constraints",
+        dest="enable_clearance_constraints",
+        action="store_true",
+    )
+    p.add_argument(
+        "--no-clearance-constraints",
+        dest="enable_clearance_constraints",
+        action="store_false",
+    )
+    p.set_defaults(enable_clearance_constraints=True)
     p.add_argument("--clearance-refit-threshold-m", type=float, default=0.0)
     p.add_argument("--object-width-m", type=float, default=0.85)
     p.add_argument("--object-height-m", type=float, default=0.85)
@@ -497,18 +587,44 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--rotation-finish-progress", type=float, default=0.8)
     p.add_argument("--export", default="both", choices=["concept", "both", "exact"])
+    p.add_argument("--write-artifacts", dest="write_artifacts", action="store_true")
+    p.add_argument("--no-write-artifacts", dest="write_artifacts", action="store_false")
+    p.set_defaults(write_artifacts=None)
+    p.add_argument("--enable-plots", dest="enable_plots", action="store_true")
+    p.add_argument("--no-plots", dest="enable_plots", action="store_false")
+    p.set_defaults(enable_plots=None)
     p.add_argument("--animation", dest="animation", action="store_true")
     p.add_argument("--no-animation", dest="animation", action="store_false")
     p.add_argument("--compare", dest="compare", action="store_true")
     p.add_argument("--no-compare", dest="compare", action="store_false")
-    p.set_defaults(compare=True, animation=False)
+    p.set_defaults(compare=None, animation=None)
     return p
 
 
 def run_cli(argv: list[str] | None = None) -> int:
     parser = build_arg_parser()
     args = parser.parse_args(argv)
+    if args.mode == "runtime_fast":
+        if args.write_artifacts is None:
+            args.write_artifacts = False
+        if args.enable_plots is None:
+            args.enable_plots = False
+        if args.animation is None:
+            args.animation = False
+        if args.compare is None:
+            args.compare = False
+    else:
+        if args.write_artifacts is None:
+            args.write_artifacts = True
+        if args.enable_plots is None:
+            args.enable_plots = True
+        if args.animation is None:
+            args.animation = False
+        if args.compare is None:
+            args.compare = True
+
     scenarios = get_scenarios()
+    runtime = PlannerRuntime(max_goal_cache_entries=max(1, int(args.max_goal_cache_entries)))
 
     run_list: list[Scenario]
     if args.scenario == "all":
@@ -523,19 +639,23 @@ def run_cli(argv: list[str] | None = None) -> int:
 
     results: list[dict[str, Any]] = []
     for scenario in run_list:
-        result = _run_single(scenario, args, scenarios)
+        result = _run_single(scenario, args, scenarios, runtime=runtime)
         results.append(result)
 
-    out_root = Path(args.output_dir)
-    out_root.mkdir(parents=True, exist_ok=True)
-    with (out_root / "run_manifest.json").open("w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2)
+    if args.write_artifacts:
+        out_root = Path(args.output_dir)
+        out_root.mkdir(parents=True, exist_ok=True)
+        with (out_root / "run_manifest.json").open("w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2)
+        out_root_msg = str(out_root.resolve())
+    else:
+        out_root_msg = "(disabled in runtime_fast/no-write-artifacts mode)"
 
     print()
     print("Heat vs obstacle semantics:")
     print("  heat: finite -> traversable with weighted penalty")
     print("  obstacle: blocked/infinite -> untraversable")
-    print(f"Artifacts written under: {out_root.resolve()}")
+    print(f"Artifacts written under: {out_root_msg}")
     return 0
 
 

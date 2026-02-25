@@ -3,15 +3,23 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
+from .backend import ComputeBackend
+
 
 PlannerMode = Literal["fmm", "dijkstra_approx"]
 CostMode = Literal["density", "inverse_speed"]
 HolonomicRotationMode = Literal["independent_profile", "tangent_follow"]
 ObjectShape = Literal["rectangle", "circle"]
+RuntimeMode = Literal["runtime_fast", "debug_diagnostics"]
 
 
 @dataclass(frozen=True)
 class PlannerConfig:
+    runtime_mode: RuntimeMode = "debug_diagnostics"
+    compute_backend: ComputeBackend = "cpu"
+    stage_timing_enabled: bool = True
+    cache_goal_fields: bool = True
+    max_goal_field_cache_entries: int = 12
     resolution_m_per_cell: float = 0.1
     planner_mode: PlannerMode = "fmm"
     cost_mode: CostMode = "density"
@@ -50,6 +58,7 @@ class PlannerConfig:
     spline_smoothing: float = 1.35
     spline_smoothing_growth: float = 1.65
     max_smoothing_refits: int = 6
+    runtime_fast_max_refits: int = 3
     bezier_target_segment_length_m: float = 1.8
     min_bezier_segments: int = 4
     max_bezier_segments: int = 220
@@ -70,6 +79,8 @@ class PlannerConfig:
     hook_penalty_weight: float = 3.0
     segment_count_penalty_weight: float = 0.14
     min_terminal_progress_ratio: float = 0.92
+    enable_smoothing: bool = True
+    enable_clearance_constraints: bool = True
     clearance_refit_threshold_m: float = 0.0
     wall_clearance_weight: float = 1.1
     wall_clearance_power: float = 2.0
@@ -120,3 +131,7 @@ class PlannerConfig:
     @property
     def required_clearance_m(self) -> float:
         return float(self.footprint_radius_m + self.safe_space_m)
+
+    @property
+    def fast_runtime(self) -> bool:
+        return self.runtime_mode == "runtime_fast"
