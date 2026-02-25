@@ -11,6 +11,7 @@ def compute_speed_profile(
     max_speed_mps: float,
     max_accel_mps2: float,
     max_centripetal_accel_mps2: float,
+    start_velocity_mps: float,
     end_velocity_mps: float,
 ) -> list[dict[str, float]]:
     if len(points) == 0:
@@ -29,6 +30,7 @@ def compute_speed_profile(
     v_lim = np.maximum(v_lim, 0.0)
 
     v = v_lim.copy()
+    v[0] = min(v[0], max(0.0, float(start_velocity_mps)))
     v[-1] = min(v[-1], max(0.0, end_velocity_mps))
 
     for i in range(1, len(v)):
@@ -45,4 +47,3 @@ def compute_speed_profile(
     for ss, vv in zip(s, v):
         out.append({"s": float(ss), "v": float(vv)})
     return out
-

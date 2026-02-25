@@ -48,6 +48,18 @@ For low-latency replanning mode (no plots/file writes by default):
 python main.py --scenario hot_island --mode runtime_fast --no-write-artifacts --no-compare --no-animation
 ```
 
+Interactive visualizer (live click-to-plan tuning UI):
+
+```powershell
+python visualizer.py
+```
+
+Or from the existing CLI:
+
+```powershell
+python main.py --interactive-visualizer --scenario hot_island
+```
+
 ## Scenarios
 
 - `hot_island`: hot center + cooler corridors (path should route around hot zone).
@@ -81,6 +93,7 @@ python main.py `
 - `--rotation-finish-progress`: fraction of path progress to finish rotating (default `0.8`)
 - `--start-approach-heading`, `--goal-approach-heading`: tangent approach constraints (deg)
 - `--start-approach-lock-distance-m`, `--goal-approach-lock-distance-m`: lock/blend lengths
+- `--start-velocity`, `--end-velocity`: start/end speed targets used by speed profile generation
 - `--endpoint-zone-m`: endpoint blending/diagnostic distance (default `0.5`)
 - `--max-endpoint-curvature`: refit threshold near endpoints
 - `--enable-smoothing` / `--no-smoothing`
@@ -90,6 +103,23 @@ python main.py `
 - `--heat-region-clearance-enabled`: adds separate spacing preference from high-heat regions
 - `--animation`: enable GIF generation (disabled by default)
 - `--no-animation`: explicit disable (default behavior)
+- `--interactive-visualizer`: launch the interactive UI instead of batch CLI execution
+
+## Interactive Visualizer
+
+The visualizer is a separate module intended for rapid experimentation and uses
+`runtime_fast` by default for responsiveness.
+
+Main capabilities:
+
+- click-to-plan updates (goal-click default, optional start/goal click mode, marker drag)
+- live planner/smoothing/endpoint/clearance/runtime control panel
+- overlays for heat, cost-to-go, clearance fields, raw path, smoothed Bezier path,
+  control handles, sampled points, tangent/holonomic arrows, endpoint approach arrows
+- live diagnostics panel with stage timings and quality metrics
+- quality guard messages for failures/refits/overshoot-hook issues
+- map editing tools (paint/erase heat, blocked brush toggle, randomize, reset)
+- export buttons for runtime payload JSON, concept JSON+CSV, screenshot, and presets
 
 ## Produced Artifacts
 

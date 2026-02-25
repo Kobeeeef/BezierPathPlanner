@@ -99,6 +99,7 @@ class PlannerConfig:
     end_heading_deg: float | None = 0.0
     holonomic_rotation_mode: HolonomicRotationMode = "independent_profile"
     rotation_finish_progress: float = 0.8
+    start_velocity_mps: float = 0.0
     end_velocity_mps: float = 0.0
     max_speed_mps: float = 4.5
     max_accel_mps2: float = 2.8

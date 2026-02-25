@@ -234,6 +234,7 @@ def run_planner(
             max_speed_mps=cfg.max_speed_mps,
             max_accel_mps2=cfg.max_accel_mps2,
             max_centripetal_accel_mps2=cfg.max_centripetal_accel_mps2,
+            start_velocity_mps=cfg.start_velocity_mps,
             end_velocity_mps=cfg.end_velocity_mps,
         )
 
@@ -303,6 +304,10 @@ def run_planner(
         "startEndpointAlignmentErrorDeg": start_align_err,
         "endEndpointAlignmentErrorDeg": end_align_err,
         "startCostToGo": float(t_field[start_rc]),
+        "startVelocityMpsRequested": float(cfg.start_velocity_mps),
+        "startVelocityMpsActual": float(speed_profile[0]["v"]) if speed_profile else 0.0,
+        "endVelocityMpsRequested": float(cfg.end_velocity_mps),
+        "endVelocityMpsActual": float(speed_profile[-1]["v"]) if speed_profile else 0.0,
         "bezierSegmentCount": len(bezier_segments),
         "smoothingAcceptedAttempt": int(smoothing_diagnostics.get("acceptedAttempt", -1)),
         "smoothingAttemptCount": int(smoothing_diagnostics.get("attemptCount", 0)),

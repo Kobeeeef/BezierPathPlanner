@@ -73,6 +73,7 @@ def _build_cfg(args: argparse.Namespace, scenario: Scenario) -> PlannerConfig:
             if args.goal_approach_lock_distance_m is not None
             else scenario.goal_approach_lock_distance_m
         ),
+        start_velocity_mps=args.start_velocity,
         end_velocity_mps=args.end_velocity,
         max_curvature=args.max_curvature,
         max_endpoint_curvature=args.max_endpoint_curvature,
@@ -174,6 +175,13 @@ def _serialize_summary_payload(
             if cfg.end_heading_deg is None
             else float(math.radians(cfg.end_heading_deg)),
         },
+        "startState": {
+            "velocityMps": cfg.start_velocity_mps,
+            "rotationDeg": cfg.start_heading_deg,
+            "rotationRad": None
+            if cfg.start_heading_deg is None
+            else float(math.radians(cfg.start_heading_deg)),
+        },
         "tuningKnobs": {
             "runtime_mode": cfg.runtime_mode,
             "compute_backend": cfg.compute_backend,
@@ -222,6 +230,7 @@ def _serialize_summary_payload(
             "end_heading_deg": cfg.end_heading_deg,
             "holonomic_rotation_mode": cfg.holonomic_rotation_mode,
             "rotation_finish_progress": cfg.rotation_finish_progress,
+            "start_velocity_mps": cfg.start_velocity_mps,
             "object_width_m": cfg.object_width_m,
             "object_height_m": cfg.object_height_m,
             "object_shape": cfg.object_shape,
@@ -481,6 +490,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         description="Heatmap-based FMM path planner with Bezier smoothing and PathPlanner-style export."
     )
+    p.add_argument("--interactive-visualizer", action="store_true")
     p.add_argument("--mode", default="debug_diagnostics", choices=["runtime_fast", "debug_diagnostics"])
     p.add_argument("--compute-backend", default="cpu", choices=["cpu", "gpu"])
     p.add_argument("--cache-goal-fields", dest="cache_goal_fields", action="store_true")
@@ -511,6 +521,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--goal-approach-heading", type=float, default=None)
     p.add_argument("--start-approach-lock-distance-m", type=float, default=None)
     p.add_argument("--goal-approach-lock-distance-m", type=float, default=None)
+    p.add_argument("--start-velocity", type=float, default=0.0)
     p.add_argument("--end-velocity", type=float, default=0.0)
     p.add_argument("--path-step", type=float, default=0.08)
     p.add_argument("--sample-ds", type=float, default=0.08)
@@ -604,6 +615,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def run_cli(argv: list[str] | None = None) -> int:
     parser = build_arg_parser()
     args = parser.parse_args(argv)
+    if bool(args.interactive_visualizer):
+        from .interactive_visualizer import launch_interactive_visualizer
+
+        initial = args.scenario if args.scenario != "all" else "hot_island"
+        return launch_interactive_visualizer(initial_scenario=initial)
+
     if args.mode == "runtime_fast":
         if args.write_artifacts is None:
             args.write_artifacts = False

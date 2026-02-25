@@ -139,6 +139,13 @@ def build_concept_export(
             "rotationDeg": float(end_rotation_deg),
             "rotationRad": float(end_rotation_rad),
         },
+        "startState": {
+            "velocityMps": float(cfg.start_velocity_mps),
+            "rotationDeg": None if cfg.start_heading_deg is None else float(cfg.start_heading_deg),
+            "rotationRad": None
+            if cfg.start_heading_deg is None
+            else float(math.radians(cfg.start_heading_deg)),
+        },
         "holonomicRotationTargets": holonomic_targets,
     }
 
@@ -209,6 +216,13 @@ def build_runtime_payload_compact(
             "rotationRad": None
             if cfg.end_heading_deg is None
             else float(math.radians(cfg.end_heading_deg)),
+        },
+        "startState": {
+            "velocityMps": float(cfg.start_velocity_mps),
+            "rotationDeg": None if cfg.start_heading_deg is None else float(cfg.start_heading_deg),
+            "rotationRad": None
+            if cfg.start_heading_deg is None
+            else float(math.radians(cfg.start_heading_deg)),
         },
     }
 
