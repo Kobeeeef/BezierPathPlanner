@@ -75,7 +75,7 @@ class InteractivePlannerVisualizer:
 
         self.root = tk.Tk()
         self.root.title("Planner Interactive Visualizer")
-        self.root.geometry("1720x980")
+        self.root.geometry("1935x848")
 
         self.status_var = tk.StringVar(value="Ready.")
         self.warning_var = tk.StringVar(value="")
@@ -418,12 +418,6 @@ class InteractivePlannerVisualizer:
             label="Enable clearance constraints",
             default=cfg.enable_clearance_constraints,
         )
-        self._add_check(
-            section,
-            key="enforce_hard_clearance_if_feasible",
-            label="Hard clearance when feasible",
-            default=cfg.enforce_hard_clearance_if_feasible,
-        )
         self._add_entry(section, key="object_width_m", label="object_width_m", default=_fmt(cfg.object_width_m))
         self._add_entry(section, key="object_height_m", label="object_height_m", default=_fmt(cfg.object_height_m))
         self._add_choice(
@@ -689,8 +683,19 @@ class InteractivePlannerVisualizer:
             warns.append("final geometry rejected: " + ", ".join([str(r) for r in geom_reasons[:3]]))
         if bool(smoothing_diag.get("refitTriggered", False)):
             warns.append("smoothing refit/selection triggered")
-        if bool(smoothing_diag.get("terminalSafeRawFallbackUsed", False)):
-            warns.append("terminal-safe raw fallback used")
+        dense_fallback_used = bool(
+            smoothing_diag.get(
+                "terminalSafeDenseFallbackUsed",
+                smoothing_diag.get("terminalSafeRawFallbackUsed", False),
+            )
+        )
+        if dense_fallback_used:
+            if bool(smoothing_diag.get("terminalSafeDenseFallbackSmoothedAccepted", False)):
+                warns.append("terminal-safe dense fallback smoothed (accepted)")
+            elif bool(smoothing_diag.get("terminalSafeDenseFallbackSmoothedRejected", False)):
+                warns.append("terminal-safe dense fallback smoothed (rejected)")
+            else:
+                warns.append("terminal-safe dense raw fallback used")
         if bool(smoothing_diag.get("terminalDegradationRefitTriggered", False)):
             warns.append("terminal degradation guard triggered refit")
         if float(smoothed.get("terminalOvershootCount", 0.0)) > 0.0:
@@ -955,7 +960,29 @@ class InteractivePlannerVisualizer:
 
         term_refit = bool(a.smoothing_diagnostics.get("terminalDegradationRefitTriggered", False))
         term_reasons = a.smoothing_diagnostics.get("terminalDegradationReasons", [])
-        terminal_raw_fallback = bool(a.smoothing_diagnostics.get("terminalSafeRawFallbackUsed", False))
+        dense_fallback_used = bool(
+            a.smoothing_diagnostics.get(
+                "terminalSafeDenseFallbackUsed",
+                a.smoothing_diagnostics.get("terminalSafeRawFallbackUsed", False),
+            )
+        )
+        dense_fallback_smoothed_accepted = bool(
+            a.smoothing_diagnostics.get("terminalSafeDenseFallbackSmoothedAccepted", False)
+        )
+        dense_fallback_smoothed_rejected = bool(
+            a.smoothing_diagnostics.get("terminalSafeDenseFallbackSmoothedRejected", False)
+        )
+        dense_fallback_diag = a.smoothing_diagnostics.get("terminalSafeDenseFallbackDiagnostics", {})
+        if not isinstance(dense_fallback_diag, dict):
+            dense_fallback_diag = {}
+        dense_fallback_status = "no"
+        if dense_fallback_used:
+            if dense_fallback_smoothed_accepted:
+                dense_fallback_status = "terminal-safe dense fallback smoothed (accepted)"
+            elif dense_fallback_smoothed_rejected:
+                dense_fallback_status = "terminal-safe dense fallback smoothed (rejected)"
+            else:
+                dense_fallback_status = "terminal-safe dense raw fallback used"
         term_reason_text = ""
         if term_refit and isinstance(term_reasons, list) and len(term_reasons) > 0:
             term_reason_text = f" ({', '.join([str(r) for r in term_reasons[:4]])})"
@@ -1062,7 +1089,7 @@ class InteractivePlannerVisualizer:
                 "terminal degradation refit: "
                 f"{'yes' if term_refit else 'no'}{term_reason_text}"
             ),
-            f"terminal-safe raw fallback: {'yes' if terminal_raw_fallback else 'no'}",
+            f"terminal-safe dense fallback: {dense_fallback_status}",
             (
                 "geometry decision reasons: "
                 + ", ".join([str(r) for r in a.smoothing_diagnostics.get("geometryDecisionReasons", [])[:5]])
@@ -1071,6 +1098,41 @@ class InteractivePlannerVisualizer:
                 else "geometry decision reasons: none"
             ),
         ]
+        if dense_fallback_used:
+            fallback_reason = str(dense_fallback_diag.get("fallbackReason", "")).strip()
+            if fallback_reason:
+                lines.append(f"dense fallback reason: {fallback_reason}")
+            dense_reasons = dense_fallback_diag.get("triggerReasons", [])
+            if isinstance(dense_reasons, list) and len(dense_reasons) > 0:
+                lines.append(
+                    "dense fallback trigger reasons: "
+                    + ", ".join([str(r) for r in dense_reasons[:5]])
+                )
+            lines.append(
+                "dense fallback integrated heat cost [raw->final]: "
+                f"{float(dense_fallback_diag.get('rawIntegratedHeatCost', 0.0)):.3f}->"
+                f"{float(dense_fallback_diag.get('finalIntegratedHeatCost', 0.0)):.3f}"
+            )
+            lines.append(
+                "dense fallback min wall clr [m] [raw->final]: "
+                f"{float(dense_fallback_diag.get('rawMinWallClearanceM', 0.0)):.3f}->"
+                f"{float(dense_fallback_diag.get('finalMinWallClearanceM', 0.0)):.3f}"
+            )
+            lines.append(
+                "dense fallback min heat-region clr [m] [raw->final]: "
+                f"{_fmt_heat_clear(dense_fallback_diag.get('rawMinHeatRegionClearanceM', -1.0))}->"
+                f"{_fmt_heat_clear(dense_fallback_diag.get('finalMinHeatRegionClearanceM', -1.0))}"
+            )
+            lines.append(
+                "dense fallback heat-chord shortcuts rejected: "
+                f"{int(dense_fallback_diag.get('heatChordRejectCount', 0))}"
+            )
+            rejected_reasons = dense_fallback_diag.get("smoothingRejectedReasons", [])
+            if isinstance(rejected_reasons, list) and len(rejected_reasons) > 0:
+                lines.append(
+                    "dense fallback smoothing rejected reasons: "
+                    + ", ".join([str(r) for r in rejected_reasons[:5]])
+                )
         self.diagnostics_var.set("\n".join(lines))
 
     def _current_background_field(self) -> tuple[np.ndarray, str, str]:

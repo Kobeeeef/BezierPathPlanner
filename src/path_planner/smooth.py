@@ -12,6 +12,7 @@ from .config import PlannerConfig
 from .geometry import (
     angle_rad,
     bezier_point,
+    bilinear_sample_grid_vectorized,
     cumulative_arc_length,
     dedupe_consecutive,
     heading_to_unit,
@@ -38,6 +39,7 @@ class SmoothingContext:
     goal_xy: np.ndarray
     wall_clearance_field: np.ndarray | None = None
     heat_region_clearance_field: np.ndarray | None = None
+    cost_density_field: np.ndarray | None = None
     required_clearance_m: float = 0.0
     hard_clearance_feasible: bool = False
 
@@ -1207,59 +1209,426 @@ def _build_bezier_chain_from_centerline(
     return segments, anchors, tangent_vectors
 
 
-def _raw_terminal_safe_bezier_chain(
-    raw_points: np.ndarray,
-    cfg: PlannerConfig,
-) -> tuple[list[BezierSegment], np.ndarray, np.ndarray]:
-    if len(raw_points) < 2:
-        return [], raw_points.copy(), np.empty((0, 2), dtype=float)
-    anchors_all = dedupe_consecutive(np.asarray(raw_points, dtype=float), tol=1e-9)
-    if len(anchors_all) < 2:
-        anchors_all = np.asarray(raw_points, dtype=float).copy()
+def _fallback_dense_sample_ds_m(cfg: PlannerConfig) -> float:
+    # Keep fallback path dense enough for runtime and visuals (2-5 cm).
+    return min(0.05, max(0.02, float(cfg.sample_ds_m)))
 
-    s = cumulative_arc_length(anchors_all)
-    total_len = float(s[-1]) if len(s) else 0.0
-    start_keep_zone = min(total_len, _terminal_zone_length(total_len, cfg, from_start=True) + 0.2)
-    goal_keep_zone = min(total_len, _terminal_zone_length(total_len, cfg, from_start=False) + 0.2)
-    terminal_keep = (s <= start_keep_zone + 1e-9) | (s >= max(0.0, total_len - goal_keep_zone) - 1e-9)
 
-    target_mid_ds = max(0.45, float(cfg.bezier_target_segment_length_m))
-    keep_idx: list[int] = [0]
-    last_kept_s = float(s[0]) if len(s) else 0.0
-    for i in range(1, len(anchors_all) - 1):
-        if terminal_keep[i]:
-            keep_idx.append(i)
-            last_kept_s = float(s[i])
+def _dedupe_points_with_u(
+    points: np.ndarray,
+    u: np.ndarray,
+    tol: float = 1e-9,
+) -> tuple[np.ndarray, np.ndarray]:
+    pts = np.asarray(points, dtype=float)
+    uu = np.asarray(u, dtype=float)
+    if len(pts) == 0:
+        return np.empty((0, 2), dtype=float), np.empty((0,), dtype=float)
+
+    keep: list[int] = [0]
+    for i in range(1, len(pts)):
+        j = keep[-1]
+        if np.linalg.norm(pts[i] - pts[j]) <= tol and abs(float(uu[i] - uu[j])) <= 1e-9:
             continue
-        if float(s[i] - last_kept_s) >= target_mid_ds:
-            keep_idx.append(i)
-            last_kept_s = float(s[i])
-    keep_idx.append(len(anchors_all) - 1)
-    keep_idx = sorted(set(keep_idx))
-    anchors = anchors_all[np.asarray(keep_idx, dtype=int)]
+        keep.append(i)
 
-    max_seg = max(1, int(cfg.max_bezier_segments))
-    if len(anchors) - 1 > max_seg:
-        # Preserve dense endpoints, decimate only the middle.
-        s_keep = cumulative_arc_length(anchors)
-        total_keep = float(s_keep[-1]) if len(s_keep) else 0.0
-        start_mask = s_keep <= start_keep_zone + 1e-9
-        goal_mask = s_keep >= max(0.0, total_keep - goal_keep_zone) - 1e-9
-        fixed_idx = sorted(set(np.flatnonzero(start_mask).tolist() + np.flatnonzero(goal_mask).tolist()))
-        fixed_idx = [i for i in fixed_idx if 0 <= i < len(anchors)]
-        if 0 not in fixed_idx:
-            fixed_idx.insert(0, 0)
-        if len(anchors) - 1 not in fixed_idx:
-            fixed_idx.append(len(anchors) - 1)
-        fixed_set = set(fixed_idx)
-        middle_idx = [i for i in range(len(anchors)) if i not in fixed_set]
-        allowed_middle = max(0, max_seg + 1 - len(fixed_idx))
-        if allowed_middle > 0 and middle_idx:
-            stride = int(math.ceil(len(middle_idx) / allowed_middle))
-            middle_idx = middle_idx[::max(1, stride)]
-        anchors = anchors[np.asarray(sorted(set(fixed_idx + middle_idx)), dtype=int)]
+    idx = np.asarray(keep, dtype=int)
+    out_pts = pts[idx]
+    out_u = uu[idx]
+    if len(out_u) > 0:
+        out_u = np.clip(out_u, 0.0, 1.0)
+        out_u = np.maximum.accumulate(out_u)
+        out_u[0] = 0.0
+        out_u[-1] = 1.0
+    return out_pts, out_u
+
+
+def _safe_ratio(num: float, den: float, default: float = 1.0) -> float:
+    if not np.isfinite(num) or not np.isfinite(den) or abs(float(den)) <= 1e-9:
+        return float(default)
+    return float(num / den)
+
+
+def _integrate_cost_along_polyline(
+    points_world: np.ndarray,
+    cost_field: np.ndarray | None,
+    resolution_m: float,
+) -> float:
+    if cost_field is None or len(points_world) < 2:
+        return 0.0
+    points = np.asarray(points_world, dtype=float)
+    p0 = points[:-1]
+    p1 = points[1:]
+    ds = np.linalg.norm(p1 - p0, axis=1)
+    valid_seg = ds > 1e-12
+    if not np.any(valid_seg):
+        return 0.0
+    x = points[:, 0] / float(resolution_m)
+    y = points[:, 1] / float(resolution_m)
+    w = bilinear_sample_grid_vectorized(cost_field, x, y)
+    w0 = w[:-1]
+    w1 = w[1:]
+    valid = valid_seg & np.isfinite(w0) & np.isfinite(w1)
+    if not np.any(valid):
+        return 0.0
+    return float(np.sum(0.5 * (w0[valid] + w1[valid]) * ds[valid]))
+
+
+def _max_cost_along_polyline(
+    points_world: np.ndarray,
+    cost_field: np.ndarray | None,
+    resolution_m: float,
+    sample_ds_m: float,
+) -> float:
+    if cost_field is None or len(points_world) == 0:
+        return 0.0
+    points = dedupe_consecutive(np.asarray(points_world, dtype=float), tol=1e-9)
+    if len(points) == 0:
+        return 0.0
+    if len(points) >= 2:
+        dense = dedupe_consecutive(
+            resample_polyline(points, max(0.01, float(sample_ds_m))),
+            tol=1e-9,
+        )
+        if len(dense) >= 2:
+            points = dense
+    vals = sample_field_along_path(points, cost_field, resolution_m)
+    finite = vals[np.isfinite(vals)]
+    return float(np.max(finite)) if finite.size else 0.0
+
+
+def _interpolate_point_by_u(
+    points: np.ndarray,
+    u: np.ndarray,
+    target_u: float,
+) -> np.ndarray:
+    if len(points) == 0:
+        return np.zeros((2,), dtype=float)
+    if len(points) == 1:
+        return points[0].copy()
+
+    t = float(np.clip(target_u, 0.0, 1.0))
+    uu = np.asarray(u, dtype=float)
+    idx = int(np.searchsorted(uu, t, side="right"))
+    if idx <= 0:
+        return points[0].copy()
+    if idx >= len(points):
+        return points[-1].copy()
+    lo = idx - 1
+    hi = idx
+    u0 = float(uu[lo])
+    u1 = float(uu[hi])
+    if u1 - u0 <= 1e-9:
+        return points[hi].copy()
+    a = (t - u0) / (u1 - u0)
+    return ((1.0 - a) * points[lo] + a * points[hi]).astype(float, copy=False)
+
+
+def _polyline_subpath_by_u(
+    points: np.ndarray,
+    u: np.ndarray,
+    u0: float,
+    u1: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    if len(points) == 0:
+        return np.empty((0, 2), dtype=float), np.empty((0,), dtype=float)
+
+    reverse = float(u1) < float(u0)
+    lo = float(np.clip(min(u0, u1), 0.0, 1.0))
+    hi = float(np.clip(max(u0, u1), 0.0, 1.0))
+    if hi - lo <= 1e-9:
+        p = _interpolate_point_by_u(points, u, lo)
+        out_pts = np.vstack([p, p])
+        out_u = np.array([lo, hi], dtype=float)
+        if reverse:
+            return out_pts[::-1].copy(), out_u[::-1].copy()
+        return out_pts, out_u
+
+    start = _interpolate_point_by_u(points, u, lo)
+    end = _interpolate_point_by_u(points, u, hi)
+    mask = (u > lo + 1e-9) & (u < hi - 1e-9)
+    mids = points[mask]
+    mids_u = u[mask]
+    if len(mids) > 0:
+        out_pts = np.vstack([start, mids, end])
+        out_u = np.concatenate([np.array([lo], dtype=float), mids_u.astype(float), np.array([hi], dtype=float)])
+    else:
+        out_pts = np.vstack([start, end])
+        out_u = np.array([lo, hi], dtype=float)
+
+    out_pts, out_u = _dedupe_points_with_u(out_pts, out_u, tol=1e-9)
+    if len(out_pts) < 2:
+        out_pts = np.vstack([start, end])
+        out_u = np.array([lo, hi], dtype=float)
+    if reverse:
+        return out_pts[::-1].copy(), out_u[::-1].copy()
+    return out_pts, out_u
+
+
+def _chaikin_refine_with_u(
+    points: np.ndarray,
+    u: np.ndarray,
+    iterations: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    pts, uu = _dedupe_points_with_u(np.asarray(points, dtype=float), np.asarray(u, dtype=float), tol=1e-9)
+    iters = max(0, int(iterations))
+    for _ in range(iters):
+        if len(pts) < 3:
+            break
+        new_pts: list[np.ndarray] = [pts[0].copy()]
+        new_u: list[float] = [float(uu[0])]
+        for i in range(len(pts) - 1):
+            p0 = pts[i]
+            p1 = pts[i + 1]
+            u0 = float(uu[i])
+            u1 = float(uu[i + 1])
+            q = 0.75 * p0 + 0.25 * p1
+            r = 0.25 * p0 + 0.75 * p1
+            uq = 0.75 * u0 + 0.25 * u1
+            ur = 0.25 * u0 + 0.75 * u1
+            new_pts.append(np.asarray(q, dtype=float))
+            new_pts.append(np.asarray(r, dtype=float))
+            new_u.append(float(uq))
+            new_u.append(float(ur))
+        new_pts.append(pts[-1].copy())
+        new_u.append(float(uu[-1]))
+        pts, uu = _dedupe_points_with_u(np.asarray(new_pts, dtype=float), np.asarray(new_u, dtype=float), tol=1e-9)
+    return pts, uu
+
+
+def _signed_turn_angles_deg(points: np.ndarray) -> np.ndarray:
+    pts = np.asarray(points, dtype=float)
+    if len(pts) < 3:
+        return np.empty((0,), dtype=float)
+
+    segs = np.diff(pts, axis=0)
+    out = np.zeros((max(0, len(segs) - 1),), dtype=float)
+    for i in range(1, len(segs)):
+        a = segs[i - 1]
+        b = segs[i]
+        na = float(np.linalg.norm(a))
+        nb = float(np.linalg.norm(b))
+        if na <= 1e-12 or nb <= 1e-12:
+            continue
+        dot = float(np.dot(a, b) / (na * nb))
+        dot = max(-1.0, min(1.0, dot))
+        ang = float(math.degrees(math.acos(dot)))
+        cross = float(a[0] * b[1] - a[1] * b[0])
+        if cross > 1e-12:
+            out[i - 1] = ang
+        elif cross < -1e-12:
+            out[i - 1] = -ang
+        else:
+            out[i - 1] = 0.0
+    return out
+
+
+def _alternating_sharp_turn_vertex_mask(points: np.ndarray, sharp_turn_deg: float) -> np.ndarray:
+    pts = np.asarray(points, dtype=float)
+    mask = np.zeros((len(pts),), dtype=bool)
+    turns = _signed_turn_angles_deg(pts)
+    if len(turns) < 2:
+        return mask
+
+    threshold = max(1e-3, float(sharp_turn_deg))
+    for i in range(len(turns)):
+        ti = float(turns[i])
+        if abs(ti) < threshold:
+            continue
+        alt_prev = (
+            i > 0
+            and abs(float(turns[i - 1])) >= threshold
+            and float(turns[i - 1]) * ti < 0.0
+        )
+        alt_next = (
+            i + 1 < len(turns)
+            and abs(float(turns[i + 1])) >= threshold
+            and float(turns[i + 1]) * ti < 0.0
+        )
+        if alt_prev or alt_next:
+            v_idx = i + 1
+            if 0 < v_idx < len(pts) - 1:
+                mask[v_idx] = True
+    return mask
+
+
+def _count_alternating_sharp_turn_pairs(points: np.ndarray, sharp_turn_deg: float) -> int:
+    turns = _signed_turn_angles_deg(np.asarray(points, dtype=float))
+    if len(turns) < 2:
+        return 0
+    threshold = max(1e-3, float(sharp_turn_deg))
+    count = 0
+    for i in range(1, len(turns)):
+        t0 = float(turns[i - 1])
+        t1 = float(turns[i])
+        if abs(t0) < threshold or abs(t1) < threshold:
+            continue
+        if t0 * t1 < 0.0:
+            count += 1
+    return int(count)
+
+
+def _fallback_zigzag_turn_threshold_deg(cfg: PlannerConfig) -> float:
+    # Use a moderate threshold so corridor "wiggles" are detected before they become visible artifacts.
+    return max(4.0, min(16.0, 0.22 * float(cfg.sharp_turn_deg)))
+
+
+def _blend_alternating_sharp_turn_vertices_once(
+    points: np.ndarray,
+    u: np.ndarray,
+    sharp_turn_deg: float,
+    blend_strength: float,
+) -> tuple[np.ndarray, np.ndarray, bool]:
+    pts, uu = _dedupe_points_with_u(np.asarray(points, dtype=float), np.asarray(u, dtype=float), tol=1e-9)
+    if len(pts) < 4:
+        return pts, uu, False
+
+    mask = _alternating_sharp_turn_vertex_mask(pts, sharp_turn_deg)
+    if not np.any(mask):
+        return pts, uu, False
+
+    w = max(0.10, min(0.70, float(blend_strength)))
+    out = pts.copy()
+    for idx in np.where(mask)[0]:
+        mid = 0.5 * (pts[idx - 1] + pts[idx + 1])
+        out[idx] = (1.0 - w) * pts[idx] + w * mid
+    out[0] = pts[0]
+    out[-1] = pts[-1]
+    out_pts, out_u = _dedupe_points_with_u(out, uu, tol=1e-9)
+    return out_pts, out_u, True
+
+
+def _reduce_alternating_sharp_turn_artifacts(
+    points: np.ndarray,
+    u: np.ndarray,
+    cfg: PlannerConfig,
+) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
+    pts, uu = _dedupe_points_with_u(np.asarray(points, dtype=float), np.asarray(u, dtype=float), tol=1e-9)
+    sharp_turn_deg = _fallback_zigzag_turn_threshold_deg(cfg)
+    before = _count_alternating_sharp_turn_pairs(pts, sharp_turn_deg)
+    if len(pts) < 4 or before <= 1:
+        return pts, uu, {
+            "applied": False,
+            "passes": 0,
+            "sharpTurnDeg": float(sharp_turn_deg),
+            "beforePairs": int(before),
+            "afterPairs": int(before),
+        }
+
+    max_passes = 2 if cfg.fast_runtime else 4
+    base_strength = 0.36 if cfg.fast_runtime else 0.42
+    best_pts = pts.copy()
+    best_u = uu.copy()
+    best_pairs = int(before)
+    work_pts = pts.copy()
+    work_u = uu.copy()
+    passes_used = 0
+    applied = False
+    for it in range(max_passes):
+        strength = min(0.68, base_strength + 0.08 * float(it))
+        blended_pts, blended_u, touched = _blend_alternating_sharp_turn_vertices_once(
+            work_pts,
+            work_u,
+            sharp_turn_deg=sharp_turn_deg,
+            blend_strength=strength,
+        )
+        if not touched:
+            break
+        applied = True
+        passes_used = it + 1
+        pairs = _count_alternating_sharp_turn_pairs(blended_pts, sharp_turn_deg)
+        if pairs <= best_pairs:
+            best_pts = blended_pts.copy()
+            best_u = blended_u.copy()
+            best_pairs = int(pairs)
+        work_pts = blended_pts
+        work_u = blended_u
+        if best_pairs <= 1:
+            break
+
+    return best_pts, best_u, {
+        "applied": bool(applied),
+        "passes": int(passes_used),
+        "sharpTurnDeg": float(sharp_turn_deg),
+        "beforePairs": int(before),
+        "afterPairs": int(best_pairs),
+    }
+
+
+def _apply_heat_chord_guard(
+    candidate_points: np.ndarray,
+    candidate_u: np.ndarray,
+    raw_points: np.ndarray,
+    raw_u: np.ndarray,
+    cfg: PlannerConfig,
+    context: SmoothingContext | None,
+) -> tuple[np.ndarray, np.ndarray, int]:
+    if (
+        context is None
+        or context.cost_density_field is None
+        or len(candidate_points) < 2
+        or len(raw_points) < 2
+    ):
+        return candidate_points.copy(), candidate_u.copy(), 0
+
+    heat_field = context.cost_density_field
+    sample_ds = max(0.01, min(0.04, 0.5 * _fallback_dense_sample_ds_m(cfg)))
+    integral_tol_ratio = 1.001
+    integral_tol_abs = 1e-5
+    peak_tol_abs = 1e-5
+
+    out_pts: list[np.ndarray] = [candidate_points[0].copy()]
+    out_u: list[float] = [float(candidate_u[0])]
+    rejected = 0
+    for i in range(len(candidate_points) - 1):
+        u0 = float(candidate_u[i])
+        u1 = float(candidate_u[i + 1])
+        chord = np.vstack([candidate_points[i], candidate_points[i + 1]])
+        raw_section, raw_section_u = _polyline_subpath_by_u(raw_points, raw_u, u0, u1)
+        if len(raw_section) < 2:
+            raw_section = chord.copy()
+            raw_section_u = np.array([u0, u1], dtype=float)
+
+        chord_integral = _integrate_cost_along_polyline(chord, heat_field, cfg.resolution_m_per_cell)
+        raw_integral = _integrate_cost_along_polyline(raw_section, heat_field, cfg.resolution_m_per_cell)
+        chord_peak = _max_cost_along_polyline(
+            chord,
+            heat_field,
+            cfg.resolution_m_per_cell,
+            sample_ds_m=sample_ds,
+        )
+        raw_peak = _max_cost_along_polyline(
+            raw_section,
+            heat_field,
+            cfg.resolution_m_per_cell,
+            sample_ds_m=sample_ds,
+        )
+        worse_integral = chord_integral > raw_integral * integral_tol_ratio + integral_tol_abs
+        worse_peak = chord_peak > raw_peak + peak_tol_abs
+        if worse_integral or worse_peak:
+            rejected += 1
+            for j in range(1, len(raw_section)):
+                out_pts.append(raw_section[j].copy())
+                out_u.append(float(raw_section_u[j]))
+        else:
+            out_pts.append(candidate_points[i + 1].copy())
+            out_u.append(float(candidate_u[i + 1]))
+
+    guarded_pts, guarded_u = _dedupe_points_with_u(
+        np.asarray(out_pts, dtype=float),
+        np.asarray(out_u, dtype=float),
+        tol=1e-9,
+    )
+    if len(guarded_pts) < 2:
+        return raw_points.copy(), raw_u.copy(), max(1, rejected)
+    return guarded_pts, guarded_u, rejected
+
+
+def _polyline_to_linear_bezier_chain(
+    points: np.ndarray,
+) -> tuple[list[BezierSegment], np.ndarray, np.ndarray]:
+    anchors = dedupe_consecutive(np.asarray(points, dtype=float), tol=1e-9)
     if len(anchors) < 2:
-        anchors = np.asarray(raw_points, dtype=float).copy()
+        return [], anchors.copy(), np.empty((0, 2), dtype=float)
     if len(anchors) == 2:
         mid = 0.5 * (anchors[0] + anchors[1])
         anchors = np.vstack([anchors[0], mid, anchors[1]])
@@ -1274,12 +1643,227 @@ def _raw_terminal_safe_bezier_chain(
         segments.append(BezierSegment(p0=p0.copy(), p1=p1.copy(), p2=p2.copy(), p3=p3.copy()))
 
     tangent_vectors = np.zeros((len(anchors), 2), dtype=float)
-    if len(anchors) >= 2:
-        tangent_vectors[0] = anchors[1] - anchors[0]
-        tangent_vectors[-1] = anchors[-1] - anchors[-2]
-        for i in range(1, len(anchors) - 1):
-            tangent_vectors[i] = 0.5 * (anchors[i + 1] - anchors[i - 1])
+    tangent_vectors[0] = anchors[1] - anchors[0]
+    tangent_vectors[-1] = anchors[-1] - anchors[-2]
+    for i in range(1, len(anchors) - 1):
+        tangent_vectors[i] = 0.5 * (anchors[i + 1] - anchors[i - 1])
     return segments, anchors, tangent_vectors
+
+
+def _fallback_polyline_metrics(
+    points: np.ndarray,
+    cfg: PlannerConfig,
+    context: SmoothingContext | None,
+) -> dict[str, Any]:
+    endpoint_zone = max(
+        float(cfg.endpoint_zone_m),
+        float(cfg.start_approach_lock_distance_m),
+        float(cfg.goal_approach_lock_distance_m),
+    )
+    diag = _polyline_diagnostics(points, endpoint_zone_m=endpoint_zone, cfg=cfg, context=context)
+    integrated_heat_cost = 0.0
+    max_heat_cost = 0.0
+    if context is not None and context.cost_density_field is not None:
+        integrated_heat_cost = _integrate_cost_along_polyline(
+            points,
+            context.cost_density_field,
+            cfg.resolution_m_per_cell,
+        )
+        max_heat_cost = _max_cost_along_polyline(
+            points,
+            context.cost_density_field,
+            cfg.resolution_m_per_cell,
+            sample_ds_m=max(0.01, 0.5 * _fallback_dense_sample_ds_m(cfg)),
+        )
+    return {
+        "diagnostics": diag,
+        "integratedHeatCost": float(integrated_heat_cost),
+        "maxHeatCost": float(max_heat_cost),
+        "minWallClearanceM": float(diag.get("minWallClearanceM", 0.0)),
+        "minHeatRegionClearanceM": float(diag.get("minHeatRegionClearanceM", -1.0)),
+        "terminalOvershootCount": float(diag.get("terminalOvershootCount", 0.0)),
+        "startTerminalHookOrOvershootFlag": float(diag.get("startTerminalHookOrOvershootFlag", 0.0)),
+        "goalTerminalHookOrOvershootFlag": float(diag.get("goalTerminalHookOrOvershootFlag", 0.0)),
+    }
+
+
+def _terminal_safe_dense_fallback_bezier_chain(
+    raw_points: np.ndarray,
+    cfg: PlannerConfig,
+    context: SmoothingContext | None,
+    trigger_reasons: list[str],
+) -> tuple[list[BezierSegment], np.ndarray, np.ndarray, dict[str, Any]]:
+    base_points = dedupe_consecutive(np.asarray(raw_points, dtype=float), tol=1e-9)
+    if len(base_points) < 2:
+        return [], base_points.copy(), np.empty((0, 2), dtype=float), {
+            "fallbackReason": "terminal_degradation_guard_triggered_no_accepted_candidate",
+            "triggerReasons": list(trigger_reasons),
+            "denseSampleDsM": float(_fallback_dense_sample_ds_m(cfg)),
+            "denseRawPointCount": int(len(base_points)),
+            "finalPointCount": int(len(base_points)),
+            "smoothingAttempted": False,
+            "smoothingAccepted": False,
+            "smoothingRejected": False,
+            "smoothingRejectedReasons": [],
+            "heatChordGuardEnabled": False,
+            "heatChordRejectCount": 0,
+            "rawAlternatingSharpTurnPairs": 0,
+            "finalAlternatingSharpTurnPairs": 0,
+            "zigzagAveragingApplied": False,
+            "zigzagAveragingPasses": 0,
+            "zigzagAveragingBeforePairs": 0,
+            "zigzagAveragingAfterPairs": 0,
+            "rawIntegratedHeatCost": 0.0,
+            "finalIntegratedHeatCost": 0.0,
+            "rawMaxHeatCost": 0.0,
+            "finalMaxHeatCost": 0.0,
+            "rawMinWallClearanceM": 0.0,
+            "finalMinWallClearanceM": 0.0,
+            "rawMinHeatRegionClearanceM": -1.0,
+            "finalMinHeatRegionClearanceM": -1.0,
+        }
+
+    dense_ds = _fallback_dense_sample_ds_m(cfg)
+    dense_raw = dedupe_consecutive(resample_polyline(base_points, dense_ds), tol=1e-9)
+    if len(dense_raw) < 2:
+        dense_raw = base_points.copy()
+    if len(dense_raw) == 2:
+        mid = 0.5 * (dense_raw[0] + dense_raw[1])
+        dense_raw = np.vstack([dense_raw[0], mid, dense_raw[1]])
+
+    s_raw = cumulative_arc_length(dense_raw)
+    total_raw = float(s_raw[-1]) if len(s_raw) else 0.0
+    raw_u = np.zeros((len(dense_raw),), dtype=float)
+    if total_raw > 1e-9:
+        raw_u = np.clip(s_raw / total_raw, 0.0, 1.0)
+    if len(raw_u):
+        raw_u[0] = 0.0
+        raw_u[-1] = 1.0
+
+    sharp_turn_deg = _fallback_zigzag_turn_threshold_deg(cfg)
+    raw_alt_turn_pairs = _count_alternating_sharp_turn_pairs(dense_raw, sharp_turn_deg)
+    final_alt_turn_pairs = int(raw_alt_turn_pairs)
+
+    raw_metrics = _fallback_polyline_metrics(dense_raw, cfg, context)
+    final_points = dense_raw.copy()
+    final_metrics = raw_metrics
+    smoothing_attempted = False
+    smoothing_accepted = False
+    smoothing_reject_reasons: list[str] = []
+    heat_chord_reject_count = 0
+    heat_guard_enabled = bool(context is not None and context.cost_density_field is not None)
+    zigzag_averaging_applied = False
+    zigzag_averaging_passes = 0
+    zigzag_averaging_before_pairs = 0
+    zigzag_averaging_after_pairs = 0
+
+    if len(dense_raw) >= 3:
+        smoothing_attempted = True
+        chaikin_iters = 1 if cfg.fast_runtime else 2
+        cand_points, cand_u = _chaikin_refine_with_u(dense_raw, raw_u, chaikin_iters)
+        cand_points, cand_u, heat_chord_reject_count = _apply_heat_chord_guard(
+            candidate_points=cand_points,
+            candidate_u=cand_u,
+            raw_points=dense_raw,
+            raw_u=raw_u,
+            cfg=cfg,
+            context=context,
+        )
+        cand_points, cand_u, zigzag_diag = _reduce_alternating_sharp_turn_artifacts(
+            points=cand_points,
+            u=cand_u,
+            cfg=cfg,
+        )
+        zigzag_averaging_applied = bool(zigzag_diag.get("applied", False))
+        zigzag_averaging_passes = int(zigzag_diag.get("passes", 0))
+        zigzag_averaging_before_pairs = int(zigzag_diag.get("beforePairs", 0))
+        zigzag_averaging_after_pairs = int(zigzag_diag.get("afterPairs", 0))
+        cand_metrics = _fallback_polyline_metrics(cand_points, cfg, context)
+        cand_alt_turn_pairs = _count_alternating_sharp_turn_pairs(cand_points, sharp_turn_deg)
+
+        clearance_tol_m = 1e-3
+        heat_tol_ratio = 1.001
+        heat_tol_abs = 1e-4
+
+        raw_heat = float(raw_metrics["integratedHeatCost"])
+        cand_heat = float(cand_metrics["integratedHeatCost"])
+        if heat_guard_enabled and cand_heat > raw_heat * heat_tol_ratio + heat_tol_abs:
+            smoothing_reject_reasons.append("integrated_heat_cost_worse_than_dense_raw")
+
+        raw_wall = float(raw_metrics["minWallClearanceM"])
+        cand_wall = float(cand_metrics["minWallClearanceM"])
+        if cand_wall < raw_wall - clearance_tol_m:
+            smoothing_reject_reasons.append("wall_clearance_worse_than_dense_raw")
+
+        raw_heat_clear = float(raw_metrics["minHeatRegionClearanceM"])
+        cand_heat_clear = float(cand_metrics["minHeatRegionClearanceM"])
+        if (
+            raw_heat_clear >= 0.0
+            and cand_heat_clear >= 0.0
+            and cand_heat_clear < raw_heat_clear - clearance_tol_m
+        ):
+            smoothing_reject_reasons.append("heat_region_clearance_worse_than_dense_raw")
+
+        raw_overshoot = float(raw_metrics["terminalOvershootCount"])
+        cand_overshoot = float(cand_metrics["terminalOvershootCount"])
+        if cand_overshoot > raw_overshoot + 1e-6:
+            smoothing_reject_reasons.append("terminal_overshoot_introduced")
+
+        raw_start_hook = float(raw_metrics["startTerminalHookOrOvershootFlag"])
+        cand_start_hook = float(cand_metrics["startTerminalHookOrOvershootFlag"])
+        if cand_start_hook > raw_start_hook + 1e-6:
+            smoothing_reject_reasons.append("start_terminal_hook_introduced")
+
+        raw_goal_hook = float(raw_metrics["goalTerminalHookOrOvershootFlag"])
+        cand_goal_hook = float(cand_metrics["goalTerminalHookOrOvershootFlag"])
+        if cand_goal_hook > raw_goal_hook + 1e-6:
+            smoothing_reject_reasons.append("goal_terminal_hook_introduced")
+
+        if cand_alt_turn_pairs > raw_alt_turn_pairs:
+            smoothing_reject_reasons.append("alternating_sharp_turns_worse_than_dense_raw")
+
+        if not smoothing_reject_reasons:
+            smoothing_accepted = True
+            final_points = cand_points
+            final_metrics = cand_metrics
+            final_alt_turn_pairs = int(cand_alt_turn_pairs)
+
+    segments, anchors, tangent_vectors = _polyline_to_linear_bezier_chain(final_points)
+    fallback_diag: dict[str, Any] = {
+        "fallbackReason": "terminal_degradation_guard_triggered_no_accepted_candidate",
+        "triggerReasons": list(trigger_reasons),
+        "denseSampleDsM": float(dense_ds),
+        "denseRawPointCount": int(len(dense_raw)),
+        "finalPointCount": int(len(final_points)),
+        "smoothingAttempted": bool(smoothing_attempted),
+        "smoothingAccepted": bool(smoothing_accepted),
+        "smoothingRejected": bool(smoothing_attempted and not smoothing_accepted),
+        "smoothingRejectedReasons": list(smoothing_reject_reasons),
+        "heatChordGuardEnabled": bool(heat_guard_enabled),
+        "heatChordRejectCount": int(heat_chord_reject_count),
+        "rawAlternatingSharpTurnPairs": int(raw_alt_turn_pairs),
+        "finalAlternatingSharpTurnPairs": int(final_alt_turn_pairs),
+        "zigzagAveragingApplied": bool(zigzag_averaging_applied),
+        "zigzagAveragingPasses": int(zigzag_averaging_passes),
+        "zigzagAveragingBeforePairs": int(zigzag_averaging_before_pairs),
+        "zigzagAveragingAfterPairs": int(zigzag_averaging_after_pairs),
+        "rawIntegratedHeatCost": float(raw_metrics["integratedHeatCost"]),
+        "finalIntegratedHeatCost": float(final_metrics["integratedHeatCost"]),
+        "rawHeatCostRatio": float(
+            _safe_ratio(
+                float(final_metrics["integratedHeatCost"]),
+                float(raw_metrics["integratedHeatCost"]),
+                default=1.0,
+            )
+        ),
+        "rawMaxHeatCost": float(raw_metrics["maxHeatCost"]),
+        "finalMaxHeatCost": float(final_metrics["maxHeatCost"]),
+        "rawMinWallClearanceM": float(raw_metrics["minWallClearanceM"]),
+        "finalMinWallClearanceM": float(final_metrics["minWallClearanceM"]),
+        "rawMinHeatRegionClearanceM": float(raw_metrics["minHeatRegionClearanceM"]),
+        "finalMinHeatRegionClearanceM": float(final_metrics["minHeatRegionClearanceM"]),
+    }
+    return segments, anchors, tangent_vectors, fallback_diag
 
 
 def _bezier_segment_length(seg: BezierSegment, samples: int = 30) -> float:
@@ -1886,13 +2470,21 @@ def smooth_path_to_beziers(
     if best_result is None or best_diag is None:
         raise RuntimeError("Failed to generate any Bezier smoothing candidate.")
 
-    used_terminal_safe_raw_fallback = False
+    used_terminal_safe_dense_fallback = False
+    dense_fallback_diag: dict[str, Any] = {}
+    dense_fallback_smoothing_accepted = False
+    dense_fallback_smoothing_rejected = False
     if best_accepted_result is not None and best_accepted_diag is not None:
         segments, anchors, tangent_vectors = best_accepted_result
         final_diag = best_accepted_diag
     else:
         if terminal_guard_triggered:
-            segments, anchors, tangent_vectors = _raw_terminal_safe_bezier_chain(resampled, cfg)
+            segments, anchors, tangent_vectors, dense_fallback_diag = _terminal_safe_dense_fallback_bezier_chain(
+                resampled,
+                cfg,
+                context=context,
+                trigger_reasons=sorted(terminal_guard_reasons),
+            )
             final_diag = _bezier_chain_diagnostics(
                 segments,
                 cfg.sample_ds_m,
@@ -1900,10 +2492,11 @@ def smooth_path_to_beziers(
                 context=context,
                 lightweight=runtime_fast,
             )
-            final_diag = _clamp_terminal_metrics_to_raw(final_diag, raw_diag)
-            used_terminal_safe_raw_fallback = True
+            used_terminal_safe_dense_fallback = True
+            dense_fallback_smoothing_accepted = bool(dense_fallback_diag.get("smoothingAccepted", False))
+            dense_fallback_smoothing_rejected = bool(dense_fallback_diag.get("smoothingRejected", False))
             accepted_attempt = -2
-            terminal_guard_reasons.add("terminal_safe_raw_fallback")
+            terminal_guard_reasons.add("terminal_safe_dense_fallback")
         else:
             segments, anchors, tangent_vectors = best_result
             final_diag = _bezier_chain_diagnostics(
@@ -1918,7 +2511,15 @@ def smooth_path_to_beziers(
         "attemptCount": int(len(attempts)),
         "acceptedAttempt": int(accepted_attempt),
         "refitTriggered": bool(accepted_attempt > 0 or accepted_attempt < 0),
-        "terminalSafeRawFallbackUsed": bool(used_terminal_safe_raw_fallback),
+        "terminalSafeDenseFallbackUsed": bool(used_terminal_safe_dense_fallback),
+        "terminalSafeDenseRawFallbackUsed": bool(
+            used_terminal_safe_dense_fallback and not dense_fallback_smoothing_accepted
+        ),
+        "terminalSafeDenseFallbackSmoothedAccepted": bool(dense_fallback_smoothing_accepted),
+        "terminalSafeDenseFallbackSmoothedRejected": bool(dense_fallback_smoothing_rejected),
+        "terminalSafeDenseFallbackDiagnostics": dict(dense_fallback_diag),
+        # Legacy key retained for compatibility with older consumers.
+        "terminalSafeRawFallbackUsed": bool(used_terminal_safe_dense_fallback),
         "terminalDegradationRefitTriggered": bool(terminal_guard_triggered),
         "terminalDegradationReasons": sorted(terminal_guard_reasons),
         "rawPathDiagnostics": raw_diag,

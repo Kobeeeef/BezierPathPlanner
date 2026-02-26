@@ -245,6 +245,12 @@ def _default_smoothing_diag(mode: str) -> dict[str, Any]:
         "attemptCount": 0,
         "acceptedAttempt": -1,
         "refitTriggered": False,
+        "terminalSafeDenseFallbackUsed": False,
+        "terminalSafeDenseRawFallbackUsed": False,
+        "terminalSafeDenseFallbackSmoothedAccepted": False,
+        "terminalSafeDenseFallbackSmoothedRejected": False,
+        "terminalSafeDenseFallbackDiagnostics": {},
+        "terminalSafeRawFallbackUsed": False,
         "rawPathDiagnostics": {},
         "smoothedPathDiagnostics": {},
         "attempts": [],
@@ -386,17 +392,13 @@ def _planning_block_cache_key(
     required_clearance_m: float,
     start_rc: tuple[int, int],
     goal_rc: tuple[int, int],
-    hard_feasible: bool,
-    enforce_hard_clearance: bool,
 ) -> tuple[Any, ...]:
-    if not (hard_feasible and enforce_hard_clearance):
-        return ("base_blocked_only",)
     sr, sc = start_rc
     gr, gc = goal_rc
     needs_start_override = bool(blocked[sr, sc] or wall_clearance[sr, sc] < required_clearance_m)
     needs_goal_override = bool(blocked[gr, gc] or wall_clearance[gr, gc] < required_clearance_m)
     return (
-        "hard_clearance",
+        "wall_clearance_hard",
         int(needs_start_override),
         start_rc if needs_start_override else (-1, -1),
         int(needs_goal_override),
@@ -451,8 +453,6 @@ def run_planner(
             required_clearance_m=float(clearance.required_clearance_m),
             start_rc=start_rc,
             goal_rc=goal_rc,
-            hard_feasible=bool(clearance.hard_clearance_feasible),
-            enforce_hard_clearance=bool(cfg.enforce_hard_clearance_if_feasible),
         )
 
     with timer.stage("propagation"):
@@ -483,6 +483,7 @@ def run_planner(
         goal_xy=np.asarray(goal_xy, dtype=float),
         wall_clearance_field=clearance.wall_clearance_m,
         heat_region_clearance_field=clearance.heat_region_clearance_m,
+        cost_density_field=cost_density,
         required_clearance_m=clearance.required_clearance_m,
         hard_clearance_feasible=clearance.hard_clearance_feasible,
     )
@@ -669,6 +670,9 @@ def run_planner(
     start_align_err = _diag_float(final_diag, "startEndpointAlignmentErrorDeg", 0.0)
     end_align_err = _diag_float(final_diag, "endEndpointAlignmentErrorDeg", 0.0)
     terminal_guard_refit = bool(smoothing_diagnostics.get("terminalDegradationRefitTriggered", False))
+    dense_fallback_diag = smoothing_diagnostics.get("terminalSafeDenseFallbackDiagnostics", {})
+    if not isinstance(dense_fallback_diag, dict):
+        dense_fallback_diag = {}
     timer.stop_total()
     stage_timings = timer.as_dict()
     runtime_stats = local_runtime.stats.as_dict()
@@ -715,6 +719,36 @@ def run_planner(
         "bezierSegmentCount": len(final_segments),
         "smoothingAcceptedAttempt": int(smoothing_diagnostics.get("acceptedAttempt", -1)),
         "smoothingAttemptCount": int(smoothing_diagnostics.get("attemptCount", 0)),
+        "terminalSafeDenseFallbackUsed": bool(smoothing_diagnostics.get("terminalSafeDenseFallbackUsed", False)),
+        "terminalSafeDenseRawFallbackUsed": bool(
+            smoothing_diagnostics.get("terminalSafeDenseRawFallbackUsed", False)
+        ),
+        "terminalSafeDenseFallbackSmoothedAccepted": bool(
+            smoothing_diagnostics.get("terminalSafeDenseFallbackSmoothedAccepted", False)
+        ),
+        "terminalSafeDenseFallbackSmoothedRejected": bool(
+            smoothing_diagnostics.get("terminalSafeDenseFallbackSmoothedRejected", False)
+        ),
+        "terminalSafeDenseFallbackReason": str(dense_fallback_diag.get("fallbackReason", "")),
+        "terminalSafeDenseFallbackHeatChordRejectCount": int(dense_fallback_diag.get("heatChordRejectCount", 0)),
+        "terminalSafeDenseFallbackRawIntegratedHeatCost": float(
+            dense_fallback_diag.get("rawIntegratedHeatCost", 0.0)
+        ),
+        "terminalSafeDenseFallbackFinalIntegratedHeatCost": float(
+            dense_fallback_diag.get("finalIntegratedHeatCost", 0.0)
+        ),
+        "terminalSafeDenseFallbackRawMinWallClearanceM": float(
+            dense_fallback_diag.get("rawMinWallClearanceM", 0.0)
+        ),
+        "terminalSafeDenseFallbackFinalMinWallClearanceM": float(
+            dense_fallback_diag.get("finalMinWallClearanceM", 0.0)
+        ),
+        "terminalSafeDenseFallbackRawMinHeatRegionClearanceM": float(
+            dense_fallback_diag.get("rawMinHeatRegionClearanceM", -1.0)
+        ),
+        "terminalSafeDenseFallbackFinalMinHeatRegionClearanceM": float(
+            dense_fallback_diag.get("finalMinHeatRegionClearanceM", -1.0)
+        ),
         "terminalSafeRawFallbackUsed": bool(smoothing_diagnostics.get("terminalSafeRawFallbackUsed", False)),
         "terminalDegradationRefitTriggered": bool(terminal_guard_refit),
         "startTerminalHeatExposureRaw": _diag_float(raw_diag, "startTerminalHeatExposure", 0.0),

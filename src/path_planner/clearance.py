@@ -123,12 +123,15 @@ def compute_heat_region_clearance_field_m(
     heat_region_mask: np.ndarray,
     blocked: np.ndarray,
     resolution_m: float,
+    required_clearance_m: float = 0.0,
 ) -> np.ndarray:
     if not np.any(heat_region_mask):
         return np.full_like(heat_region_mask, np.inf, dtype=float)
 
     dist_cells = distance_transform_edt(~heat_region_mask)
     out = np.asarray(dist_cells * resolution_m, dtype=float)
+    if required_clearance_m > 0.0:
+        np.maximum(0.0, out - float(required_clearance_m), out=out)
     out[blocked] = 0.0
     return out
 
@@ -169,7 +172,10 @@ def precompute_clearance_base(
 
     heat_region_mask, heat_thresh = derive_heat_region_mask(heat, blocked, cfg)
     heat_region_clearance = compute_heat_region_clearance_field_m(
-        heat_region_mask, blocked, cfg.resolution_m_per_cell
+        heat_region_mask,
+        blocked,
+        cfg.resolution_m_per_cell,
+        required_clearance_m=required,
     )
     heat_decay = max(1e-6, float(cfg.heat_region_clearance_decay_m))
     heat_region_penalty = np.zeros_like(heat, dtype=float)
@@ -200,12 +206,12 @@ def clearance_layers_from_base(
     goal_rc: tuple[int, int],
 ) -> ClearanceLayers:
     feasible_mask = base.feasible_mask
-    hard_feasible = _connected(feasible_mask, start_rc, goal_rc)
+    hard_feasible = bool(cfg.enable_clearance_constraints) and _connected(feasible_mask, start_rc, goal_rc)
     planning_blocked = blocked.copy()
-    if cfg.enforce_hard_clearance_if_feasible and hard_feasible:
-        planning_blocked |= base.wall_clearance_m < base.required_clearance_m
-        planning_blocked[start_rc] = False
-        planning_blocked[goal_rc] = False
+    # Wall clearance is always a hard constraint; heat remains a soft penalty.
+    planning_blocked |= base.wall_clearance_m < base.required_clearance_m
+    planning_blocked[start_rc] = False
+    planning_blocked[goal_rc] = False
     combined = base.wall_penalty + base.heat_region_penalty
     combined[planning_blocked] = 0.0
 
