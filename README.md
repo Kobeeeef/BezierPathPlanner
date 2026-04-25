@@ -1,5 +1,7 @@
 # Heatmap FMM Path Planner (FRC / PathPlanner Concepts)
 
+<img width="815" height="413" alt="beziercurves" src="https://github.com/user-attachments/assets/9fb960c1-23cd-4730-a4b9-c3f60f7ca702" />
+
 This prototype plans smooth robot paths on a **2D heat map** where:
 
 - **Heat** = high cost but still traversable (finite values).
